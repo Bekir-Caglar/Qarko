@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.bekircaglar.qarko.presentation.cart.CartScreen
 import com.bekircaglar.qarko.presentation.feed.FeedScreen
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailScreen
 import com.bekircaglar.qarko.presentation.tenant.TenantMenuScreen
@@ -36,6 +37,10 @@ fun AppNavHost(
             route = NavRoutes.FOOD_DETAIL,
         ) { backStackEntry ->
             FoodDetailScreen(navController)
+        }
+
+        composable(NavRoutes.CART) {
+            CartScreen(navController)
         }
 
 

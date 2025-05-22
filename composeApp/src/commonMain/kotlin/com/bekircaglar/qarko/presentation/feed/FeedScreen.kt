@@ -199,7 +199,9 @@ fun FeedScreen(navController: NavController) {
                 actions = {
                     Box(modifier = Modifier.padding(end = 16.dp)) {
                         IconButton(
-                            onClick = { /* Do something */ },
+                            onClick = {
+                                navController.navigate(Screen.Cart.route)
+                            },
                             modifier = Modifier
                                 .padding(1.dp)
                                 .background(darkBlue, CircleShape)
@@ -301,7 +303,6 @@ fun FeedScreen(navController: NavController) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -363,9 +364,6 @@ fun FeedScreen(navController: NavController) {
                         }
                     }
                 }
-
-
-                Spacer(modifier = Modifier.height(16.dp))
 
                 val sortedRestaurants = restaurants.sortedBy { restaurant ->
                     restaurant.distance.split(" ")[0].toFloatOrNull() ?: Float.MAX_VALUE

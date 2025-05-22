@@ -107,14 +107,13 @@ fun FoodDetailScreen(navController: NavController) {
                 enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
                 exit = fadeOut()
             ) {
-                TopAppBar(
+                CenterAlignedTopAppBar(
                     title = {
                         Text(
                             text = "Yemek Detayı",
                             color = darkGray,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 16.dp)
                         )
                     },
                     colors = TopAppBarDefaults.topAppBarColors().copy(
