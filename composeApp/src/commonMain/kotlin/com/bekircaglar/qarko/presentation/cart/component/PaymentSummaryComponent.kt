@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bekircaglar.qarko.darkBlue
+import com.bekircaglar.qarko.darkPrimary
 import com.bekircaglar.qarko.gray
 
 @Composable
@@ -33,7 +35,7 @@ fun PaymentSummaryComponent(
             .padding(horizontal = 16.dp)
     ) {
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = "Sipariş Özeti",
@@ -59,11 +61,14 @@ fun PaymentSummaryComponent(
                 fontWeight = FontWeight.SemiBold,
                 color = gray
             )
+
+
         }
+
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Delivery Fee
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -88,6 +93,27 @@ fun PaymentSummaryComponent(
                     color = gray
                 )
             }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Toplam",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = darkBlue
+            )
+            val total = price + discountedDeliveryFee
+            Text(
+                text = "₺$total",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = darkBlue
+            )
         }
     }
 }

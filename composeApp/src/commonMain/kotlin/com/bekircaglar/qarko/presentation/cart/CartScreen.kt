@@ -5,6 +5,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.with
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -53,11 +55,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bekircaglar.qarko.black
+import com.bekircaglar.qarko.darkBlue
 import com.bekircaglar.qarko.darkGreen
 import com.bekircaglar.qarko.data.model.CartItemData
 import com.bekircaglar.qarko.gray
@@ -69,11 +74,14 @@ import com.bekircaglar.qarko.presentation.cart.component.CardPaymentTab
 import com.bekircaglar.qarko.presentation.cart.component.CartItem
 import com.bekircaglar.qarko.presentation.cart.component.CartTabRow
 import com.bekircaglar.qarko.presentation.cart.component.CashPaymentTab
+import com.bekircaglar.qarko.presentation.cart.component.OrderButtonComponent
 import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodRow
 import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodSheet
 import com.bekircaglar.qarko.presentation.cart.component.PaymentSummaryComponent
+import com.bekircaglar.qarko.presentation.cart.component.TableEntryCard
 import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.primary
+import com.bekircaglar.qarko.util.toPriceString
 import com.bekircaglar.qarko.white
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
@@ -86,24 +94,24 @@ fun CartScreen(navController: NavController) {
     val cartItems = remember {
         mutableStateListOf(
             CartItemData(
-                imageUrl = "https://picsum.photos/id/292/200/200",
+                imageUrl = "https://images.unsplash.com/photo-1511920170033-f8396924c348", // espresso
                 name = "Espresso",
-                description = "Strong and bold coffee",
+                description = "Güçlü ve yoğun kahve",
                 price = 15.90,
                 quantity = 1
             ),
             CartItemData(
-                imageUrl = "https://picsum.photos/id/102/200/200",
+                imageUrl = "https://images.unsplash.com/photo-1504674900247-0877df9cc836", // cappuccino
                 name = "Cappuccino",
-                description = "Milk foam and espresso",
-                price = 18.50,
+                description = "Süt köpüğü ve espresso",
+                price = 21.50,
                 quantity = 2
             ),
             CartItemData(
-                imageUrl = "https://picsum.photos/id/1062/200/200",
-                name = "Cheesecake",
-                description = "Creamy and delicious dessert",
-                price = 25.00,
+                imageUrl = "https://images.unsplash.com/photo-1502741338009-cac2772e18bc", // filtre kahve
+                name = "Filtre Kahve",
+                description = "Klasik filtre kahve",
+                price = 14.00,
                 quantity = 1
             ),
         )
@@ -113,6 +121,7 @@ fun CartScreen(navController: NavController) {
     var showPaymentSheet by remember { mutableStateOf(false) }
     val total = remember(cartItems) { cartItems.sumOf { it.price * it.quantity } }
     val modalBottomSheetState = rememberModalBottomSheetState()
+    var selectedTabIndex by remember { mutableStateOf(0) }
 
     Scaffold(
         containerColor = white,
@@ -131,6 +140,7 @@ fun CartScreen(navController: NavController) {
                 actions = {
                     IconButton(
                         onClick = {
+                            cartItems.clear()
                         },
                         modifier = Modifier
                     ) {
@@ -162,42 +172,112 @@ fun CartScreen(navController: NavController) {
                     }
                 }
             )
-        }
-    ) { paddingValues ->
-        var selectedTabIndex by remember { mutableStateOf(0) }
+        },
+        content = { paddingValues ->
 
+            var selectedTable by remember { mutableStateOf<String?>(null) }
+            var restaurantName by remember { mutableStateOf<String?>(null) }
 
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-        ) {
-            Spacer(modifier = Modifier.padding(top = 16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues) // Apply padding from Scaffold
+            ) {
+                // Kaydırılabilir içerik alanı
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                    // Sabit ödeme bölümü için altta boşluk bırakın
+                ) {
+                    Column(modifier = Modifier.background(white)) {
+                        TableEntryCard(
+                            tableNumber = selectedTable ?: "-",
+                            isTableActive = selectedTable != null,
+                            restaurantName = restaurantName,
+                            onQrScanClick = {
+                                selectedTable = "15"
+                                restaurantName = "Lezzet Restaurant"
+                            },
+                            onChangeTableClick = {
+                                selectedTable = null
+                                restaurantName = null
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CartTabRow(
+                            selectedTabIndex = selectedTabIndex,
+                            onTabSelected = { selectedTabIndex = it }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            CartTabRow(
-                selectedTabIndex = selectedTabIndex,
-                onTabSelected = { selectedTabIndex = it },
-            )
+                    when (selectedTabIndex) {
+                        0 -> {
+                            CardPaymentTab(
+                                cartItems = cartItems,
+                            )
+                        }
 
-            AnimatedContent(
-                targetState = selectedTabIndex,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(300)) with
-                            fadeOut(animationSpec = tween(300))
+                        1 -> {
+                            CashPaymentTab(
+                                cartItems = cartItems,
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(80.dp)) // Alttaki buton için boşluk bırak
                 }
-            ) { targetIndex ->
-                when (targetIndex) {
-                    0 -> {
-                        CardPaymentTab(cartItems = cartItems)
-                    }
 
-                    1 -> {
-                        CashPaymentTab(cartItems = cartItems)
-                    }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter) // Bu Column'u parent Box'ın altına hizala
+                        .shadow(8.dp)
+                        .background(white)
+                        .padding(16.dp)
+                ) {
+                    val total = cartItems.sumOf { it.price * it.quantity }
+                    OrderButtonComponent(
+                        buttonText = if (selectedTabIndex == 1) "Sipariş Ver" else "Ödemeye Geç",
+                        isButtonEnabled = cartItems.isNotEmpty() && selectedTable != null,
+                        onButtonClick = { /* Sipariş verme işlemini yönet */ },
+                        topContent = {
+                            if (selectedTabIndex == 0){
+                                PaymentMethodRow(total)
+                                Spacer(modifier = Modifier.size(16.dp))
+                            } else {
+                                if (cartItems.isNotEmpty()) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Toplam",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+
+                                        Text(
+                                            text = total.toPriceString(),
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = darkBlue
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
+                            }
+                        },
+                        showWarning = cartItems.isNotEmpty() && selectedTable == null,
+                        warningText = "Lütfen sipariş vermek için önce bir masa seçin."
+                    )
                 }
             }
         }
-    }
+    )
 
     if (showPaymentSheet) {
         ModalBottomSheet(
@@ -214,4 +294,3 @@ fun CartScreen(navController: NavController) {
         }
     }
 }
-
