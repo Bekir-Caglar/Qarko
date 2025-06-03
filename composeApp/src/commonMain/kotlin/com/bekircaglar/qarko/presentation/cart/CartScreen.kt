@@ -81,6 +81,7 @@ import com.bekircaglar.qarko.presentation.cart.component.PaymentSummaryComponent
 import com.bekircaglar.qarko.presentation.cart.component.TableEntryCard
 import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.primary
+import com.bekircaglar.qarko.util.toPriceString
 import com.bekircaglar.qarko.white
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
@@ -103,7 +104,7 @@ fun CartScreen(navController: NavController) {
                 imageUrl = "https://images.unsplash.com/photo-1504674900247-0877df9cc836", // cappuccino
                 name = "Cappuccino",
                 description = "Süt köpüğü ve espresso",
-                price = 180000.50,
+                price = 21.50,
                 quantity = 2
             ),
             CartItemData(
@@ -188,26 +189,26 @@ fun CartScreen(navController: NavController) {
                         .fillMaxSize()
                     // Sabit ödeme bölümü için altta boşluk bırakın
                 ) {
-                    Column(modifier = Modifier.background(white)) { // Arka planı beyaz yaparak alttaki öğelerin görünmesini engelle
+                    Column(modifier = Modifier.background(white)) {
                         TableEntryCard(
-                            tableNumber = selectedTable ?: "-", // Null durumunda gösterilecek metin
+                            tableNumber = selectedTable ?: "-",
                             isTableActive = selectedTable != null,
                             restaurantName = restaurantName,
                             onQrScanClick = {
-                                selectedTable = "15" // QR'dan gelen masa numarası
-                                restaurantName = "Lezzet Restaurant" // QR'dan gelen restoran adı
+                                selectedTable = "15"
+                                restaurantName = "Lezzet Restaurant"
                             },
                             onChangeTableClick = {
                                 selectedTable = null
                                 restaurantName = null
                             }
                         )
-                        Spacer(modifier = Modifier.height(8.dp)) // TableEntryCard sonrası boşluk
+                        Spacer(modifier = Modifier.height(8.dp))
                         CartTabRow(
                             selectedTabIndex = selectedTabIndex,
                             onTabSelected = { selectedTabIndex = it }
                         )
-                        Spacer(modifier = Modifier.height(8.dp)) // CartTabRow sonrası boşluk
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -224,6 +225,8 @@ fun CartScreen(navController: NavController) {
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(80.dp)) // Alttaki buton için boşluk bırak
                 }
 
                 Column(
@@ -234,14 +237,14 @@ fun CartScreen(navController: NavController) {
                         .background(white)
                         .padding(16.dp)
                 ) {
-
+                    val total = cartItems.sumOf { it.price * it.quantity }
                     OrderButtonComponent(
                         buttonText = if (selectedTabIndex == 1) "Sipariş Ver" else "Ödemeye Geç",
                         isButtonEnabled = cartItems.isNotEmpty() && selectedTable != null,
                         onButtonClick = { /* Sipariş verme işlemini yönet */ },
                         topContent = {
                             if (selectedTabIndex == 0){
-                                PaymentMethodRow(120.0)
+                                PaymentMethodRow(total)
                                 Spacer(modifier = Modifier.size(16.dp))
                             } else {
                                 if (cartItems.isNotEmpty()) {
@@ -257,7 +260,7 @@ fun CartScreen(navController: NavController) {
                                         )
 
                                         Text(
-                                            text = "₺120", // Toplam tutarı formatla
+                                            text = total.toPriceString(),
                                             fontSize = 18.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = darkBlue

@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bekircaglar.qarko.gray
+import com.bekircaglar.qarko.util.toPriceString
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.credit_card
@@ -89,14 +90,14 @@ fun PaymentMethodRow(
            verticalAlignment = Alignment.CenterVertically
        ) {
            Text(
-               text = "₺${totalPrice + totalPrice*0.4}",
+               text = (totalPrice + totalPrice*0.4).toPriceString(),
                fontSize = 18.sp,
                color = gray,
                style = TextStyle(textDecoration = TextDecoration.LineThrough),
                modifier = Modifier.padding(end = 4.dp)
            )
            Text(
-               text = "₺$totalPrice",
+               text = totalPrice.toPriceString(),
                fontSize = 18.sp,
                fontWeight = Bold,
                color = Color.Black,
