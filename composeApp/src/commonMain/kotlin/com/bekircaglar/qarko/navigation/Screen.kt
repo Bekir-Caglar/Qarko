@@ -13,6 +13,8 @@ object NavRoutes {
     const val FOOD_DETAIL = "food_detail"
     const val TENANT_MENU = "tenant_menu"
     const val CART = "cart"
+    const val WELCOME = "welcome"
+    const val QR_SCAN = "qr_scan"
 }
 
 sealed class Screen(val route: String, val icon: ImageVector? = null, val title: String = "") {
@@ -24,4 +26,6 @@ sealed class Screen(val route: String, val icon: ImageVector? = null, val title:
     companion object {
         val bottomNavScreens = listOf(Home, TenantMenu, FoodDetail )
     }
+    object Welcome : Screen(NavRoutes.WELCOME, title = "Welcome")
+    object QRScan : Screen(NavRoutes.QR_SCAN, title = "QR Scan")
 }

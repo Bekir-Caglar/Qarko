@@ -91,14 +91,14 @@ fun PaymentMethodRow(
        ) {
            Text(
                text = (totalPrice + totalPrice*0.4).toPriceString(),
-               fontSize = 18.sp,
+               fontSize = 16.sp,
                color = gray,
                style = TextStyle(textDecoration = TextDecoration.LineThrough),
                modifier = Modifier.padding(end = 4.dp)
            )
            Text(
                text = totalPrice.toPriceString(),
-               fontSize = 18.sp,
+               fontSize = 16.sp,
                fontWeight = Bold,
                color = Color.Black,
                modifier = Modifier.padding(end = 8.dp)

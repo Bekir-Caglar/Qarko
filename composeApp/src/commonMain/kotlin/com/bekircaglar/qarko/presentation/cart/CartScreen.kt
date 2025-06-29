@@ -181,13 +181,11 @@ fun CartScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues) // Apply padding from Scaffold
+                    .padding(paddingValues)
             ) {
-                // Kaydırılabilir içerik alanı
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                    // Sabit ödeme bölümü için altta boşluk bırakın
                 ) {
                     Column(modifier = Modifier.background(white)) {
                         TableEntryCard(
@@ -226,13 +224,13 @@ fun CartScreen(navController: NavController) {
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(80.dp)) // Alttaki buton için boşluk bırak
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
 
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.BottomCenter) // Bu Column'u parent Box'ın altına hizala
+                        .align(Alignment.BottomCenter)
                         .shadow(8.dp)
                         .background(white)
                         .padding(16.dp)
@@ -241,7 +239,7 @@ fun CartScreen(navController: NavController) {
                     OrderButtonComponent(
                         buttonText = if (selectedTabIndex == 1) "Sipariş Ver" else "Ödemeye Geç",
                         isButtonEnabled = cartItems.isNotEmpty() && selectedTable != null,
-                        onButtonClick = { /* Sipariş verme işlemini yönet */ },
+                        onButtonClick = {  },
                         topContent = {
                             if (selectedTabIndex == 0){
                                 PaymentMethodRow(total)
