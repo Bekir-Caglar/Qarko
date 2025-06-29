@@ -65,6 +65,18 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
+
+            implementation("io.github.kalinjul.easyqrscan:scanner:0.3.0")
+
+            val lottieVersion = "2.0.0-rc04"
+
+            implementation("io.github.alexzhirkevich:compottie:$lottieVersion")
+            implementation("io.github.alexzhirkevich:compottie-dot:$lottieVersion")
+            implementation("io.github.alexzhirkevich:compottie-network:$lottieVersion")
+
+            // This module can cause binary incompatibilities. Please read its description first
+            implementation("io.github.alexzhirkevich:compottie-resources:$lottieVersion")
+
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material)

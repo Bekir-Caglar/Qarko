@@ -9,6 +9,8 @@ import com.bekircaglar.qarko.presentation.cart.CartScreen
 import com.bekircaglar.qarko.presentation.feed.FeedScreen
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailScreen
 import com.bekircaglar.qarko.presentation.tenant.TenantMenuScreen
+import com.bekircaglar.qarko.presentation.welcome.QRScanScreen
+import com.bekircaglar.qarko.presentation.welcome.WelcomeScreen
 
 /**
  * Main navigation component that defines the app's navigation graph
@@ -16,7 +18,7 @@ import com.bekircaglar.qarko.presentation.tenant.TenantMenuScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    startDestination: String = NavRoutes.FEED,
+    startDestination: String = NavRoutes.WELCOME,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -24,25 +26,28 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
+        composable(NavRoutes.WELCOME) {
+            WelcomeScreen(navController)
+        }
+
+        composable(NavRoutes.QR_SCAN) {
+            QRScanScreen(navController)
+        }
 
         composable(NavRoutes.FEED) {
-             FeedScreen(navController)
+            FeedScreen(navController)
         }
 
         composable(NavRoutes.TENANT_MENU) {
-             TenantMenuScreen(navController)
+            TenantMenuScreen(navController)
         }
 
-        composable(
-            route = NavRoutes.FOOD_DETAIL,
-        ) { backStackEntry ->
+        composable(NavRoutes.FOOD_DETAIL) {
             FoodDetailScreen(navController)
         }
 
         composable(NavRoutes.CART) {
             CartScreen(navController)
         }
-
-
     }
 }

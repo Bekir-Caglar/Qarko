@@ -2,25 +2,30 @@ package com.bekircaglar.qarko.presentation.feed
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults.cardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,29 +42,35 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.darkBlue
+import com.bekircaglar.qarko.darkPrimary
 import com.bekircaglar.qarko.data.model.FoodCategory
 import com.bekircaglar.qarko.data.model.Restaurant
 import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.navigation.Screen
-import com.bekircaglar.qarko.presentation.feed.component.CategoryItem
 import com.bekircaglar.qarko.presentation.feed.component.RestaurantCard
 import com.bekircaglar.qarko.presentation.feed.component.SearchTextField
 import com.bekircaglar.qarko.primary
 import com.bekircaglar.qarko.white
 import org.jetbrains.compose.resources.painterResource
+import org.publicvalue.multiplatform.qrcode.CameraPermissionStatus
+import org.publicvalue.multiplatform.qrcode.CameraPosition
+import org.publicvalue.multiplatform.qrcode.CodeType
+import org.publicvalue.multiplatform.qrcode.ScannerWithPermissions
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.arrow_right
-import qarko.composeapp.generated.resources.compose_multiplatform
 import qarko.composeapp.generated.resources.menu_left
+import qarko.composeapp.generated.resources.qr
 import qarko.composeapp.generated.resources.shopping_cart
 
 
@@ -240,6 +251,150 @@ fun FeedScreen(navController: NavController) {
 
         var searchText by remember { mutableStateOf("") }
         var isSearchFocused by remember { mutableStateOf(false) }
+        var showQr by remember { mutableStateOf(false) }
+        var scannedLink by remember { mutableStateOf<String?>(null) }
+
+        if (showQr) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(1f)
+            ) {
+                // Kamera ekranı
+                ScannerWithPermissions(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clipToBounds(),
+                    onScanned = {
+                        scannedLink = it
+                        false
+                    },
+                    types = listOf(CodeType.QR),
+                    cameraPosition = CameraPosition.BACK,
+                    permissionDeniedContent = {
+                        Text("Kamera izni gerekli", color = Color.White)
+                    }
+                )
+
+                IconButton(
+                    onClick = { showQr = false },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(16.dp)
+                        .background(Color.Black.copy(alpha = 0.5f), shape = CircleShape)
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.arrow_right),
+                        contentDescription = "Geri",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(220.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .width(40.dp)
+                            .height(3.dp)
+                            .background(Color.White)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .width(3.dp)
+                            .height(40.dp)
+                            .background(Color.White)
+                    )
+
+                    // Sağ üst köşe
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .width(40.dp)
+                            .height(3.dp)
+                            .background(Color.White)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .width(3.dp)
+                            .height(40.dp)
+                            .background(Color.White)
+                    )
+
+                    // Sol alt köşe
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .width(40.dp)
+                            .height(3.dp)
+                            .background(Color.White)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .width(3.dp)
+                            .height(40.dp)
+                            .background(Color.White)
+                    )
+
+                    // Sağ alt köşe
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .width(40.dp)
+                            .height(3.dp)
+                            .background(Color.White)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .width(3.dp)
+                            .height(40.dp)
+                            .background(Color.White)
+                    )
+                }
+
+                // Taranan link gösterimi
+                scannedLink?.let { link ->
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 32.dp)
+                            .padding(horizontal = 16.dp)
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "QR Kod Okundu",
+                                fontWeight = Bold,
+                                fontSize = 16.sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = link, maxLines = 2)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = {
+                                    showQr = false
+                                    if (link.contains("pizzaheaven")) {
+                                        navController.navigate(Screen.TenantMenu.route)
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Devam Et")
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -257,63 +412,100 @@ fun FeedScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.size(24.dp))
 
-            // Categories Section
-            Column(
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = cardElevation(8.dp)
                 ) {
-                    Row {
-                        Text(
-                            text = "Categories",
-                            color = black,
-                            fontSize = 18.sp,
-                            fontWeight = Bold
-                        )
-                    }
-                    TextButton(
-                        onClick = {},
-                        colors = ButtonDefaults.textButtonColors().copy(
-                            containerColor = Color.Transparent,
-                            contentColor = gray,
-                            disabledContainerColor = Color.Transparent,
-                            disabledContentColor = gray,
-                        )
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                    colors = listOf(
+                                        darkPrimary.copy(0.7f),
+                                        primary,
+                                        primary.copy(alpha = 0.8f),
+                                        primary.copy(alpha = 0.6f)
+                                    )
+                                )
+                            )
+                            .fillMaxSize()
+                            .padding(16.dp),
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                        // Sol taraftaki içerik
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .fillMaxHeight(),
+                            verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "See All",
-                                color = gray,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
+                                text = "QR Kod Tarayın",
+                                color = white,
+                                fontSize = 18.sp,
+                                fontWeight = Bold
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Restoran menüsüne hızlıca erişin",
+                                color = white.copy(alpha = 0.8f),
+                                fontSize = 14.sp
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
 
-                            Icon(
-                                painter = painterResource(Res.drawable.arrow_right),
-                                contentDescription = "arrow",
-                                tint = gray,
-                                modifier = Modifier
-                                    .padding(start = 4.dp)
-                                    .size(12.dp)                            )
+                            Button(
+                                onClick = {
+                                    showQr = true
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = white
+                                ),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(Res.drawable.qr),
+                                        contentDescription = "QR Tara",
+                                        tint = primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Tarayın",
+                                        color = primary,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
                         }
-                    }
-                }
 
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                ) {
-                    items(categories) { category ->
-                        CategoryItem(category)
+                        // Sağ ortadaki QR resmi
+                        Image(
+                            painter = painterResource(Res.drawable.qr),
+                            contentDescription = "qr",
+                            modifier = Modifier
+                                .size(60.dp)
+                                .align(Alignment.CenterEnd),
+                            colorFilter = ColorFilter.tint(
+                                color = white.copy(alpha = 0.3f)
+                            )
+                        )
                     }
                 }
             }
-
             Spacer(modifier = Modifier.size(24.dp))
 
             // Nearby Restaurants Section
@@ -385,4 +577,5 @@ fun FeedScreen(navController: NavController) {
         }
     }
 }
+
 
