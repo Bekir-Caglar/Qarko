@@ -23,6 +23,7 @@ import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.darkPrimary
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.primary
+import com.bekircaglar.qarko.surfaceGray
 import com.bekircaglar.qarko.white
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
@@ -49,7 +50,7 @@ fun WelcomeScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFf5f5f5))
+            .background(surfaceGray)
     ) {
         Column(
             modifier = Modifier

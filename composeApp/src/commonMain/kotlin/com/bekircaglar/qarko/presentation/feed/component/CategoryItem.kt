@@ -39,7 +39,7 @@ fun CategoryItem(category: FoodCategory) {
         colors = CardDefaults.cardColors(containerColor = white),
         modifier = Modifier
             .width(120.dp)
-            .height(140.dp)
+            .height(100.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -47,7 +47,7 @@ fun CategoryItem(category: FoodCategory) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp)
+                    .height(60.dp)
             ) {
                 AsyncImage(
                     model = category.imageUrl,
@@ -57,46 +57,23 @@ fun CategoryItem(category: FoodCategory) {
                 )
             }
 
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column {
-                    Text(
-                        text = category.name,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = black,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "Starting",
-                            fontSize = 12.sp,
-                            color = gray,
-                            maxLines = 1
-                        )
-
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text(
-                            text = category.startingPrice,
-                            fontSize = 14.sp,
-                            fontWeight = Bold,
-                            color = darkGray,
-                            textAlign = TextAlign.End,
-                            modifier = Modifier
-                        )
-                    }
-                }
-
+                Text(
+                    text = category.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = black,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
 
             }
+
         }
     }
 }
