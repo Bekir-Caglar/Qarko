@@ -53,8 +53,7 @@ fun SearchTextField(
         maxLines = 1,
         shape = MaterialTheme.shapes.medium,
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .fillMaxWidth(),
         colors = TextFieldDefaults.colors().copy(
             unfocusedContainerColor = lighterGray,
             focusedContainerColor = lightGray,

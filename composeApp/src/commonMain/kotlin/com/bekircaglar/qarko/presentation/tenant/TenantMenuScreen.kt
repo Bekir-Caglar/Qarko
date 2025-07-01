@@ -2,6 +2,7 @@ package com.bekircaglar.qarko.presentation.tenant
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -27,38 +28,40 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import coil3.compose.AsyncImage
 import com.bekircaglar.qarko.darkBlue
 import com.bekircaglar.qarko.darkPrimary
@@ -66,10 +69,13 @@ import com.bekircaglar.qarko.data.model.Allergen
 import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.lightGray
+import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.common.components.BackButton
+import com.bekircaglar.qarko.presentation.feed.component.SearchTextField
 import com.bekircaglar.qarko.presentation.tenant.component.FoodItemCard
 import com.bekircaglar.qarko.primary
+import com.bekircaglar.qarko.surfaceGray
 import com.bekircaglar.qarko.white
 import com.bekircaglar.qarko.yellow
 import kotlinx.coroutines.launch
@@ -78,11 +84,13 @@ import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.arrow_left
 import qarko.composeapp.generated.resources.clock
 import qarko.composeapp.generated.resources.favourite
+import qarko.composeapp.generated.resources.ifsokak_logo
 import qarko.composeapp.generated.resources.location
 import qarko.composeapp.generated.resources.more_horizontal
-import kotlin.text.get
+import qarko.composeapp.generated.resources.qr
+import qarko.composeapp.generated.resources.shopping_cart
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TenantMenuScreen(navController: NavController) {
     val menuCategories = listOf(
@@ -271,7 +279,6 @@ fun TenantMenuScreen(navController: NavController) {
         }
     }
 
-
     val currentCategoryIndex = remember {
         derivedStateOf {
             val layoutInfo = lazyListState.layoutInfo
@@ -306,253 +313,270 @@ fun TenantMenuScreen(navController: NavController) {
             }
         }
     }
+    Box() {
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AsyncImage(
-            model = "https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=600&auto=format",
-            contentDescription = "Restoran",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(320.dp)
-        )
+        Scaffold(
+            bottomBar = {
+                AppBottomBar(
+                    navController = navController,
+                    currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: "",
+                )
+            },
+            topBar = {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors().copy(
+                        containerColor = white
+                    ),
+                    title = {
+                        Image(
+                            painter = painterResource(Res.drawable.ifsokak_logo),
+                            contentDescription = "logo",
+                            colorFilter = ColorFilter.tint(Color(0xFFf4244a)),
+                            modifier = Modifier.clickable {
+                                navController.navigate(Screen.TenantMenu.route)
+                            }
+                        )
+                    },
+                    actions = {
+                        Box(modifier = Modifier.padding(end = 16.dp)) {
+                            IconButton(
+                                onClick = {
+                                    navController.navigate(Screen.Cart.route)
+                                },
+                                modifier = Modifier
+                                    .padding(1.dp)
+                                    .background(darkBlue, CircleShape)
+                            ) {
+                                Image(
+                                    painter = painterResource(Res.drawable.shopping_cart),
+                                    contentDescription = "Menu",
+                                    colorFilter = ColorFilter.tint(white),
+                                    modifier = Modifier.padding(12.dp),
+                                )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 32.dp, start = 16.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BackButton(
-                backgroundColor = Color.Black.copy(alpha = 0.5f)
-            ) { navController.popBackStack() }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(primary)
+                                    .align(Alignment.TopEnd)
+                            ) {
+                                Text(
+                                    text = "2",
+                                    color = white,
+                                    fontSize = 12.sp,
+                                    fontWeight = Bold,
+                                    lineHeight = 16.sp,
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .padding(2.dp)
+                                )
+                            }
+                        }
+                    }
+                )
 
-            Row {
-                IconButton(
-                    onClick = { /* Favori */ },
-                    modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                        .size(36.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.favourite),
-                        contentDescription = "Favori",
-                        tint = white,
-                        modifier = Modifier.padding(10.dp)
+            },
+            containerColor = Color.White
+        ) { innerPadding ->
 
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .padding(innerPadding)
+                    .background(
+                        color = surfaceGray,
                     )
+                    .padding(horizontal = 16.dp)
+            ) {
+
+                var searchText by remember { mutableStateOf("") }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column {
+                        Text(
+                            text = "IF Sokak",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            color = Color.Black
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = "Fast Food, Sokak Lezzetleri, Alkol",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    }
                 }
-                Spacer(Modifier.width(8.dp))
-                IconButton(
-                    onClick = { /* Menü */ },
-                    modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                        .size(36.dp)
+
+                Spacer(Modifier.height(8.dp))
+
+                val scrollState = rememberScrollState()
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(scrollState),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(Res.drawable.clock),
+                                contentDescription = "Saat",
+                                tint = gray,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                "09:00 - 23:00",
+                                color = Color.Black,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(Res.drawable.location),
+                                contentDescription = "Uzaklık",
+                                tint = gray,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                "Çayyolu, Ankara",
+                                color = Color.Black,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                HorizontalDivider(color = lightGray)
+
+                Spacer(Modifier.height(8.dp))
+
+                SearchTextField(
+                    text = searchText,
+                    onValueChange = {
+                        searchText = it
+                    },
+                    placeholder = "Arama yapın...",
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+
+
+
+                Text(
+                    text = "Kategoriler",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = darkPrimary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                LazyRow(
+                    state = chipListState,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 8.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.more_horizontal),
-                        contentDescription = "Menü",
-                        tint = white,
-                        modifier = Modifier.padding(10.dp)
-                    )
+                    items(menuCategories) { category ->
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .combinedClickable(
+                                    onClick = {
+                                        selectedCategory.value = category
+                                        categoryIndices[category]?.let { index ->
+                                            coroutineScope.launch {
+                                                lazyListState.animateScrollToItem(index)
+                                            }
+                                        }
+                                    }
+                                )
+                        ) {
+                            Surface(
+                                color = if (selectedCategory.value == category) primary.copy(alpha = 0.2f) else Color(
+                                    0xFFF2F2F2
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                border = if (selectedCategory.value == category) BorderStroke(
+                                    1.dp,
+                                    primary
+                                ) else null
+                            ) {
+                                Text(
+                                    text = category,
+                                    color = if (selectedCategory.value == category) primary else Color.DarkGray,
+                                    fontWeight = if (selectedCategory.value == category) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(
+                                        horizontal = 16.dp,
+                                        vertical = 8.dp
+                                    ),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                LazyColumn(
+                    state = lazyListState,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp)
+                ) {
+                    items(allItems.size) { index ->
+                        when (val item = allItems[index]) {
+                            is String -> {
+                                Text(
+                                    text = item,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp,
+                                    color = darkPrimary,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
+
+                            is FoodItem -> {
+                                FoodItemCard(
+                                    item = item,
+                                    onClick = { navController.navigate(Screen.FoodDetail.route) },
+                                    onAddToCartClick = { /* Sepete ekle işlemi */ }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
-
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.7f)
                 .align(Alignment.BottomCenter)
-                .background(
-                    color = Color.White,
-                    shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
-                )
-                .padding(horizontal = 20.dp, vertical = 20.dp)
+                .zIndex(2f)
+                .padding(bottom = 32.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+            FloatingActionButton(
+                onClick = { navController.navigate("qr_scan") },
+                containerColor = primary,
+                contentColor = white,
+                modifier = Modifier.size(64.dp)
             ) {
-                Column {
-                    Text(
-                        text = "Pizza Heaven",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        color = Color.Black
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = "Pizza, İtalyan, Fast Food",
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                }
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Star,
-                            contentDescription = "Puan",
-                            tint = yellow,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            "4.8",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(start = 2.dp)
-                        )
-                        Text(
-                            "(120)",
-                            color = Color.Gray,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(start = 2.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(8.dp))
-
-            val scrollState = rememberScrollState()
-            Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(scrollState),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(Res.drawable.clock),
-                        contentDescription = "Saat",
-                        tint = gray,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        "09:00 - 23:00",
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(Res.drawable.location),
-                        contentDescription = "Uzaklık",
-                        tint = gray,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        "1.2 km",
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    categories.forEach { cat ->
-                        CategoryChip(cat)
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(8.dp))
-            HorizontalDivider(color = lightGray)
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = "Kategoriler",
-                style = MaterialTheme.typography.titleMedium,
-                color = darkPrimary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            LazyRow(
-                state = chipListState,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 8.dp)
-            ) {
-                items(menuCategories) { category ->
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .combinedClickable(
-                                onClick = {
-                                    selectedCategory.value = category
-                                    categoryIndices[category]?.let { index ->
-                                        coroutineScope.launch {
-                                            lazyListState.animateScrollToItem(index)
-                                        }
-                                    }
-                                }
-                            )
-                    ) {
-                        Surface(
-                            color = if (selectedCategory.value == category) primary.copy(alpha = 0.2f) else Color(
-                                0xFFF2F2F2
-                            ),
-                            shape = RoundedCornerShape(10.dp),
-                            border = if (selectedCategory.value == category) BorderStroke(
-                                1.dp,
-                                primary
-                            ) else null
-                        ) {
-                            Text(
-                                text = category,
-                                color = if (selectedCategory.value == category) primary else Color.DarkGray,
-                                fontWeight = if (selectedCategory.value == category) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 14.sp,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            LazyColumn(
-                state = lazyListState,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
-            ) {
-                items(allItems.size) { index ->
-                    when (val item = allItems[index]) {
-                        is String -> {
-                            Text(
-                                text = item,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                color = darkPrimary,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-
-                        is FoodItem -> {
-                            FoodItemCard(
-                                item = item,
-                                onClick = { navController.navigate(Screen.FoodDetail.route) },
-                                onAddToCartClick = { /* Sepete ekle işlemi */ }
-                            )
-                        }
-                    }
-                }
+                Icon(
+                    painter = painterResource(Res.drawable.qr),
+                    contentDescription = "QR",
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
     }
 }
-
-
 
 @Composable
 fun CategoryChip(text: String) {

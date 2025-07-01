@@ -61,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.darkBlue
 import com.bekircaglar.qarko.darkGreen
@@ -68,6 +69,7 @@ import com.bekircaglar.qarko.data.model.CartItemData
 import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.lightGray
 import com.bekircaglar.qarko.lighterGray
+import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.cart.component.CardDetails
 import com.bekircaglar.qarko.presentation.cart.component.CardPaymentTab
@@ -125,6 +127,12 @@ fun CartScreen(navController: NavController) {
 
     Scaffold(
         containerColor = white,
+        bottomBar = {
+            AppBottomBar(
+                navController = navController,
+                currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: ""
+            )
+        },
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(

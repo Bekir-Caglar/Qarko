@@ -8,6 +8,8 @@ val black = Color(0xFF000000)
 
 val primary = Color(0xFF51C4D3)
 
+val surfaceGray = Color(0xFFf5f5f5)
+
 val darkPrimary = Color(0xFF126E82)
 
 val gray = Color(0xFF979797)

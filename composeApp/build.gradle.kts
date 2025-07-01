@@ -63,6 +63,9 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
+
+            implementation (libs.accompanist.systemuicontroller)
+
         }
         commonMain.dependencies {
 
@@ -76,6 +79,8 @@ kotlin {
 
             // This module can cause binary incompatibilities. Please read its description first
             implementation("io.github.alexzhirkevich:compottie-resources:$lottieVersion")
+
+
 
             implementation(compose.runtime)
             implementation(compose.foundation)

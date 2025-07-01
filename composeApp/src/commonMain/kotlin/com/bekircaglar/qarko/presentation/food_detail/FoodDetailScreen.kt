@@ -29,10 +29,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import coil3.compose.AsyncImage
 import com.bekircaglar.qarko.*
 import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.data.model.IngredientWithIcon
+import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.presentation.common.components.BackButton
 import kotlinx.coroutines.launch
 import qarko.composeapp.generated.resources.Res

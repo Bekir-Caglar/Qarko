@@ -52,7 +52,7 @@ fun QRScanScreen(navController: NavController) {
         if (isScanning) {
             ScannerWithPermissions(
                 onScanned = { result ->
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.TenantMenu.route) {
                         popUpTo(Screen.QRScan.route) { inclusive = true }
                     }
                     isScanning = false
@@ -118,7 +118,7 @@ fun QRScanScreen(navController: NavController) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .clickable() {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.TenantMenu.route) {
                         popUpTo(Screen.QRScan.route) { inclusive = true }
                     }
                 }
