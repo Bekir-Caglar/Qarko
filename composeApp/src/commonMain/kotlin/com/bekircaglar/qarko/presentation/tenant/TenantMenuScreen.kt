@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,8 +26,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -71,22 +68,20 @@ import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.lightGray
 import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Screen
-import com.bekircaglar.qarko.presentation.common.components.BackButton
-import com.bekircaglar.qarko.presentation.feed.component.SearchTextField
+import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.tenant.component.FoodItemCard
 import com.bekircaglar.qarko.primary
 import com.bekircaglar.qarko.surfaceGray
+import com.bekircaglar.qarko.util.QarkoFontFamily
+import com.bekircaglar.qarko.util.QarkoTypography
+import com.bekircaglar.qarko.util.createQarkoTypography
 import com.bekircaglar.qarko.white
-import com.bekircaglar.qarko.yellow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.arrow_left
 import qarko.composeapp.generated.resources.clock
-import qarko.composeapp.generated.resources.favourite
 import qarko.composeapp.generated.resources.ifsokak_logo
 import qarko.composeapp.generated.resources.location
-import qarko.composeapp.generated.resources.more_horizontal
 import qarko.composeapp.generated.resources.qr
 import qarko.composeapp.generated.resources.shopping_cart
 
@@ -332,9 +327,6 @@ fun TenantMenuScreen(navController: NavController) {
                             painter = painterResource(Res.drawable.ifsokak_logo),
                             contentDescription = "logo",
                             colorFilter = ColorFilter.tint(Color(0xFFf4244a)),
-                            modifier = Modifier.clickable {
-                                navController.navigate(Screen.TenantMenu.route)
-                            }
                         )
                     },
                     actions = {
@@ -362,7 +354,7 @@ fun TenantMenuScreen(navController: NavController) {
                                     .background(primary)
                                     .align(Alignment.TopEnd)
                             ) {
-                                Text(
+                                QText(
                                     text = "2",
                                     color = white,
                                     fontSize = 12.sp,
@@ -386,9 +378,6 @@ fun TenantMenuScreen(navController: NavController) {
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .padding(innerPadding)
-                    .background(
-                        color = surfaceGray,
-                    )
                     .padding(horizontal = 16.dp)
             ) {
 
@@ -400,14 +389,14 @@ fun TenantMenuScreen(navController: NavController) {
                     verticalAlignment = Alignment.Top
                 ) {
                     Column {
-                        Text(
+                        QText(
                             text = "IF Sokak",
-                            fontWeight = FontWeight.Bold,
                             fontSize = 22.sp,
+                            textStyle = QarkoTypography.titleMedium,
                             color = Color.Black
                         )
                         Spacer(Modifier.height(2.dp))
-                        Text(
+                        QText(
                             text = "Fast Food, Sokak Lezzetleri, Alkol",
                             color = Color.Gray,
                             fontSize = 14.sp
@@ -430,7 +419,7 @@ fun TenantMenuScreen(navController: NavController) {
                                 tint = gray,
                                 modifier = Modifier.size(16.dp)
                             )
-                            Text(
+                            QText(
                                 "09:00 - 23:00",
                                 color = Color.Black,
                                 fontSize = 12.sp,
@@ -445,7 +434,7 @@ fun TenantMenuScreen(navController: NavController) {
                                 tint = gray,
                                 modifier = Modifier.size(16.dp)
                             )
-                            Text(
+                            QText(
                                 "Çayyolu, Ankara",
                                 color = Color.Black,
                                 fontSize = 12.sp,
@@ -459,23 +448,23 @@ fun TenantMenuScreen(navController: NavController) {
 
                 HorizontalDivider(color = lightGray)
 
-                Spacer(Modifier.height(8.dp))
-
-                SearchTextField(
-                    text = searchText,
-                    onValueChange = {
-                        searchText = it
-                    },
-                    placeholder = "Arama yapın...",
-                )
+//                Spacer(Modifier.height(8.dp))
+//
+//                SearchTextField(
+//                    text = searchText,
+//                    onValueChange = {
+//                        searchText = it
+//                    },
+//                    placeholder = "Arama yapın...",
+//                )
                 Spacer(modifier = Modifier.size(16.dp))
 
 
 
-                Text(
+                QText(
                     text = "Kategoriler",
-                    style = MaterialTheme.typography.titleMedium,
                     color = darkPrimary,
+                    textStyle = QarkoTypography.titleSmall,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -509,10 +498,10 @@ fun TenantMenuScreen(navController: NavController) {
                                     primary
                                 ) else null
                             ) {
-                                Text(
+                                QText(
                                     text = category,
                                     color = if (selectedCategory.value == category) primary else Color.DarkGray,
-                                    fontWeight = if (selectedCategory.value == category) FontWeight.Bold else FontWeight.Normal,
+                                    fontWeight = if (selectedCategory.value == category) Bold else FontWeight.Normal,
                                     fontSize = 14.sp,
                                     modifier = Modifier.padding(
                                         horizontal = 16.dp,
@@ -537,7 +526,7 @@ fun TenantMenuScreen(navController: NavController) {
                             is String -> {
                                 Text(
                                     text = item,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = Bold,
                                     fontSize = 18.sp,
                                     color = darkPrimary,
                                     modifier = Modifier.padding(vertical = 8.dp)
@@ -560,7 +549,7 @@ fun TenantMenuScreen(navController: NavController) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .zIndex(2f)
-                .padding(bottom = 32.dp)
+                .padding(bottom = 24.dp)
         ) {
             FloatingActionButton(
                 onClick = { navController.navigate("qr_scan") },
@@ -584,7 +573,7 @@ fun CategoryChip(text: String) {
         color = Color(0xFFF2F2F2),
         shape = RoundedCornerShape(16.dp),
     ) {
-        Text(
+        QText(
             text = text,
             color = Color.DarkGray,
             fontSize = 12.sp,

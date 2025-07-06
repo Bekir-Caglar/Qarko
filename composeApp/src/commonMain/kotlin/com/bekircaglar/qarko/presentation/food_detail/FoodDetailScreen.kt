@@ -36,6 +36,7 @@ import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.data.model.IngredientWithIcon
 import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.presentation.common.components.BackButton
+import com.bekircaglar.qarko.presentation.common.components.QText
 import kotlinx.coroutines.launch
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.add
@@ -111,7 +112,7 @@ fun FoodDetailScreen(navController: NavController) {
             ) {
                 CenterAlignedTopAppBar(
                     title = {
-                        Text(
+                        QText(
                             text = "Yemek Detayı",
                             color = darkGray,
                             fontSize = 20.sp,
@@ -236,7 +237,7 @@ fun FoodDetailScreen(navController: NavController) {
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(
+                                QText(
                                     text = "4.8",
                                     color = white,
                                     fontWeight = FontWeight.Bold,
@@ -270,14 +271,14 @@ fun FoodDetailScreen(navController: NavController) {
                                 verticalArrangement = Arrangement.Center
                             ) {
 
-                                Text(
+                                QText(
                                     text = food.name,
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = darkBlue
                                 )
 
-                                Text(
+                                QText(
                                     text = food.info,
                                     fontSize = 14.sp,
                                     color = gray
@@ -285,7 +286,7 @@ fun FoodDetailScreen(navController: NavController) {
 
                             }
 
-                            Text(
+                            QText(
                                 text = food.price,
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
@@ -322,7 +323,7 @@ fun FoodDetailScreen(navController: NavController) {
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        Divider(color = lightGray)
+                        HorizontalDivider(color = lightGray)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         AnimatedVisibility(
@@ -331,7 +332,7 @@ fun FoodDetailScreen(navController: NavController) {
                             exit = fadeOut(animationSpec = tween(300)) + shrinkVertically()
                         ) {
                             Column {
-                                Text(
+                                QText(
                                     text = "${food.name}, ${food.info}. En kaliteli malzemelerle hazırlanır ve özenle servis edilir.",
                                     fontSize = 14.sp,
                                     color = Color.DarkGray,
@@ -347,7 +348,7 @@ fun FoodDetailScreen(navController: NavController) {
                                             enter = fadeIn() + slideInHorizontally(),
                                             exit = fadeOut()
                                         ) {
-                                            Text(
+                                            QText(
                                                 text = optionType,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 16.sp,
@@ -382,7 +383,7 @@ fun FoodDetailScreen(navController: NavController) {
                                                             scaleY = if (isSelected) 1.1f else 1f
                                                         }
                                                 ) {
-                                                    Text(
+                                                    QText(
                                                         text = value,
                                                         color = if (isSelected) primary else darkGray,
                                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
@@ -412,7 +413,7 @@ fun FoodDetailScreen(navController: NavController) {
                                     .background(backgroundTint.copy(alpha = 0.3f))
                                     .padding(16.dp)
                             ) {
-                                Text(
+                                QText(
                                     text = "İçindekiler",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
@@ -483,7 +484,7 @@ fun FoodDetailScreen(navController: NavController) {
                         }
 
 
-                        Text(
+                        QText(
                             text = quantity.toString(),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
@@ -530,7 +531,7 @@ fun FoodDetailScreen(navController: NavController) {
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = primary)
                     ) {
-                        Text(
+                        QText(
                             text = "Sepete Ekle",
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -585,7 +586,7 @@ fun IngredientItemWithIconAnimated(ingredient: IngredientWithIcon) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
+        QText(
             text = ingredient.name,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
@@ -622,7 +623,7 @@ fun TabButtonAnimated(
                 scaleY = if (isSelected) 1.08f else 1f
             }
     ) {
-        Text(
+        QText(
             text = text,
             color = color,
             fontWeight = fontWeight,

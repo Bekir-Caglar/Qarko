@@ -34,6 +34,8 @@ import qarko.composeapp.generated.resources.offer
 import qarko.composeapp.generated.resources.offer_filled
 import qarko.composeapp.generated.resources.profile
 import qarko.composeapp.generated.resources.profile_filled
+import qarko.composeapp.generated.resources.search
+import qarko.composeapp.generated.resources.search_filled
 
 @Composable
 fun AppBottomBar(
@@ -55,21 +57,19 @@ fun AppBottomBar(
         )
 
         NavigationBar(
-            modifier = modifier,
+            modifier = modifier.background(white).padding(horizontal = 16.dp).height(70.dp),
             tonalElevation = 8.dp,
             containerColor = white,
         ) {
             items.forEach { item ->
                 val selected = currentRoute == item.route
                 val indicatorColor by animateColorAsState(
-                    if (selected && isAndroid) primary.copy(0.3f) else Color.Transparent,
+                    if (selected && isAndroid) primary.copy(0.2f) else Color.Transparent,
                     label = "bottom_bar_indicator_color"
                 )
                 NavigationBarItem(
                     selected = selected,
                     onClick = {
-
-
                         if (!selected) {
                             navController.navigate(item.route) {
                                 launchSingleTop = true
@@ -78,6 +78,12 @@ fun AppBottomBar(
                         }
                     },
                     icon = {
+                        val iconSize = if (selected) {
+                            if (!isAndroid) 24.dp else 22.dp
+                        } else {
+                            if (!isAndroid) 22.dp else 20.dp
+                        }
+
                         Crossfade(
                             targetState = selected,
                             label = "bottom_bar_icon_crossfade"
@@ -89,21 +95,12 @@ fun AppBottomBar(
                                     painter = it,
                                     contentDescription = item.label,
                                     tint = if (isSelected) primary else black,
-                                    modifier = Modifier.size(22.dp)
+                                    modifier = Modifier.size(iconSize)
                                 )
                             }
                         }
                     },
-                    label = {
-                        Text(
-                            text = item.label,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (selected) primary else black,
-                            overflow = TextOverflow.Clip,
-                            maxLines = 1
-                        )
-                    },
-                    alwaysShowLabel = true,
+                    alwaysShowLabel = false,
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = indicatorColor,
                         selectedIconColor = primary,
@@ -134,20 +131,20 @@ fun defaultBottomBarItems(): List<BottomBarItem> {
             label = "Menü"
         ),
         BottomBarItem(
-            route = "",
+            route = Screen.Search.route,
+            unSelectedIconPainter = painterResource(Res.drawable.search),
+            selectedIconPainter = painterResource(Res.drawable.search_filled),
+            label = "Ara"
+        ),
+        BottomBarItem(route = "", unSelectedIconPainter = null, label = ""),
+        BottomBarItem(
+            route = Screen.Campaign.route,
             unSelectedIconPainter = painterResource(Res.drawable.offer),
             selectedIconPainter = painterResource(Res.drawable.offer_filled),
             label = "Kampanyalar"
         ),
-        BottomBarItem(route = "", unSelectedIconPainter = null, label = ""),
         BottomBarItem(
-            route = Screen.Cart.route,
-            unSelectedIconPainter = painterResource(Res.drawable.cart),
-            selectedIconPainter = painterResource(Res.drawable.cart_filled),
-            label = "Sepet"
-        ),
-        BottomBarItem(
-            route = "profile",
+            route = Screen.Auth.route,
             unSelectedIconPainter = painterResource(Res.drawable.profile),
             selectedIconPainter = painterResource(Res.drawable.profile_filled),
             label = "Profil"

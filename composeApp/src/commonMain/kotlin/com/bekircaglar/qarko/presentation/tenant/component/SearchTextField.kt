@@ -1,7 +1,6 @@
-package com.bekircaglar.qarko.presentation.feed.component
+package com.bekircaglar.qarko.presentation.tenant.component
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -16,9 +15,9 @@ import androidx.compose.ui.unit.sp
 import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.lightGray
 import com.bekircaglar.qarko.lighterGray
+import com.bekircaglar.qarko.presentation.common.components.QText
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.compose_multiplatform
 import qarko.composeapp.generated.resources.search
 
 
@@ -43,7 +42,7 @@ fun SearchTextField(
         },
 
         placeholder = {
-            Text(
+            QText(
                 text = placeholder,
                 color = gray,
                 fontSize = 14.sp,

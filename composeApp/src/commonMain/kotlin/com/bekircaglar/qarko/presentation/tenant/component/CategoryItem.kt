@@ -1,9 +1,7 @@
-package com.bekircaglar.qarko.presentation.feed.component
+package com.bekircaglar.qarko.presentation.tenant.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,16 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontWeight.Companion.Bold
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.darkGray
 import com.bekircaglar.qarko.data.model.FoodCategory
-import com.bekircaglar.qarko.gray
+import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.white
 
 @Composable
@@ -63,7 +58,7 @@ fun CategoryItem(category: FoodCategory) {
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
+                QText(
                     text = category.name,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
