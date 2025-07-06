@@ -25,17 +25,25 @@ import com.bekircaglar.qarko.white
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun CartTabRow(
+fun GenericTabRow(
+    tabTitles: List<String>,
     selectedTabIndex: Int,
-    onTabSelected: (Int) -> Unit
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    selectedTabColor: Color = primary,
+    unselectedTabColor: Color = Color.Transparent,
+    selectedTextColor: Color = white,
+    unselectedTextColor: Color = gray,
+    backgroundColor: Color = gray.copy(alpha = 0.2f),
+    cornerRadius: Int = 16
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 32.dp)
             .height(48.dp)
             .background(
-                color = gray.copy(alpha = 0.2f),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                color = backgroundColor,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(cornerRadius.dp)
             )
     ) {
         AnimatedContent(
@@ -54,45 +62,30 @@ fun CartTabRow(
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Tab(
-                    selected = tabIndex == 0,
-                    onClick = { onTabSelected(0) },
-                    selectedContentColor = primary,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(3.dp)
-                        .background(
-                            if (tabIndex == 0) primary else Color.Transparent,
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(13.dp)
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = tabIndex == index,
+                        onClick = { onTabSelected(index) },
+                        selectedContentColor = selectedTabColor,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(3.dp)
+                            .background(
+                                if (tabIndex == index) selectedTabColor else unselectedTabColor,
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape((cornerRadius - 3).dp)
+                            )
+                            .padding(
+                                start = if (index == 0) 0.dp else 4.dp,
+                                end = if (index == tabTitles.lastIndex) 0.dp else 4.dp
+                            )
+                            .height(48.dp),
+                    ) {
+                        Text(
+                            text = title,
+                            fontSize = 16.sp,
+                            color = if (tabIndex == index) selectedTextColor else unselectedTextColor
                         )
-                        .padding(end = 4.dp)
-                        .height(48.dp),
-                ) {
-                    Text(
-                        text = "Kart ile öde",
-                        fontSize = 16.sp,
-                        color = if (tabIndex == 0) white else gray
-                    )
-                }
-                Tab(
-                    selected = tabIndex == 1,
-                    onClick = { onTabSelected(1) },
-                    selectedContentColor = primary,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(3.dp)
-                        .background(
-                            if (tabIndex == 1) primary else Color.Transparent,
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(13.dp)
-                        )
-                        .padding(start = 4.dp)
-                        .height(48.dp),
-                ) {
-                    Text(
-                        text = "Kasada öde",
-                        fontSize = 16.sp,
-                        color = if (tabIndex == 1) white else gray
-                    )
+                    }
                 }
             }
         }

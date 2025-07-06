@@ -75,9 +75,6 @@ fun CartItem(
     onDecreaseQuantity: () -> Unit,
     onRemove: () -> Unit
 ) {
-    var isNoteVisible by remember { mutableStateOf(false) }
-    var note by remember { mutableStateOf("") }
-
     Column {
         Row(
             modifier = Modifier
@@ -123,31 +120,10 @@ fun CartItem(
                 ) {
                     Text(
                         text = "₺$price",
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = darkBlue
                     )
-
-                    OutlinedButton(
-                        onClick = { isNoteVisible = !isNoteVisible },
-                        modifier = Modifier.height(28.dp),
-                        colors = ButtonDefaults.outlinedButtonColors().copy(
-                            containerColor = white,
-                            contentColor = primary
-                        ),
-                        contentPadding = PaddingValues(horizontal = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Edit,
-                            contentDescription = "Not Ekle",
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(2.dp))
-                        Text(
-                            text = if (note.isNotEmpty()) "Not Düzenle" else "Not Ekle",
-                            fontSize = 12.sp
-                        )
-                    }
                 }
             }
 
@@ -190,49 +166,6 @@ fun CartItem(
                         modifier = Modifier.size(14.dp)
                     )
                 }
-            }
-        }
-
-        AnimatedVisibility(
-            visible = isNoteVisible,
-            enter = fadeIn(animationSpec = tween(300)) + expandVertically(animationSpec = tween(300)),
-            exit = fadeOut(animationSpec = tween(300)) + shrinkVertically(animationSpec = tween(300))
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                OutlinedTextField(
-                    value = note,
-                    onValueChange = { note = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Sipariş notu ekleyin...") },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = OutlinedTextFieldDefaults.colors().copy(
-                        focusedContainerColor = white,
-                        unfocusedTextColor = black,
-                        focusedIndicatorColor = darkPrimary,
-                        unfocusedIndicatorColor = darkPrimary,
-                        cursorColor = primary,
-                        focusedLabelColor = darkPrimary,
-                        unfocusedLabelColor = gray,
-                        textSelectionColors = TextSelectionColors(
-                            handleColor = primary,
-                            backgroundColor = lightBlue
-                        )
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = androidx.compose.ui.text.input.ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { isNoteVisible = false }
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
             }
         }
     }

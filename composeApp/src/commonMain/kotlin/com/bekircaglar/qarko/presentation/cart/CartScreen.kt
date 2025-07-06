@@ -1,14 +1,6 @@
 package com.bekircaglar.qarko.presentation.cart
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,30 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -55,34 +30,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.darkBlue
-import com.bekircaglar.qarko.darkGreen
 import com.bekircaglar.qarko.data.model.CartItemData
-import com.bekircaglar.qarko.gray
-import com.bekircaglar.qarko.lightGray
-import com.bekircaglar.qarko.lighterGray
-import com.bekircaglar.qarko.navigation.AppBottomBar
-import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.cart.component.CardDetails
 import com.bekircaglar.qarko.presentation.cart.component.CardPaymentTab
-import com.bekircaglar.qarko.presentation.cart.component.CartItem
-import com.bekircaglar.qarko.presentation.cart.component.CartTabRow
 import com.bekircaglar.qarko.presentation.cart.component.CashPaymentTab
+import com.bekircaglar.qarko.presentation.cart.component.GenericTabRow
 import com.bekircaglar.qarko.presentation.cart.component.OrderButtonComponent
 import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodRow
 import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodSheet
-import com.bekircaglar.qarko.presentation.cart.component.PaymentSummaryComponent
-import com.bekircaglar.qarko.presentation.cart.component.TableEntryCard
-import com.bekircaglar.qarko.presentation.common.components.BackButton
-import com.bekircaglar.qarko.primary
+import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.util.toPriceString
 import com.bekircaglar.qarko.white
 import org.jetbrains.compose.resources.painterResource
@@ -127,19 +89,13 @@ fun CartScreen(navController: NavController) {
 
     Scaffold(
         containerColor = white,
-        bottomBar = {
-            AppBottomBar(
-                navController = navController,
-                currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: ""
-            )
-        },
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = white,
                 ),
                 title = {
-                    Text(
+                    QText(
                         text = "Sepetim",
                         fontSize = 20.sp,
                         color = black
@@ -183,9 +139,6 @@ fun CartScreen(navController: NavController) {
         },
         content = { paddingValues ->
 
-            var selectedTable by remember { mutableStateOf<String?>(null) }
-            var restaurantName by remember { mutableStateOf<String?>(null) }
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -196,23 +149,13 @@ fun CartScreen(navController: NavController) {
                         .fillMaxSize()
                 ) {
                     Column(modifier = Modifier.background(white)) {
-                        TableEntryCard(
-                            tableNumber = selectedTable ?: "-",
-                            isTableActive = selectedTable != null,
-                            restaurantName = restaurantName,
-                            onQrScanClick = {
-                                selectedTable = "15"
-                                restaurantName = "Lezzet Restaurant"
-                            },
-                            onChangeTableClick = {
-                                selectedTable = null
-                                restaurantName = null
-                            }
-                        )
                         Spacer(modifier = Modifier.height(8.dp))
-                        CartTabRow(
+                        GenericTabRow(
+                            tabTitles = listOf("Kart ile öde", "Kasada öde"),
                             selectedTabIndex = selectedTabIndex,
-                            onTabSelected = { selectedTabIndex = it }
+                            onTabSelected = { index ->
+                                selectedTabIndex = index
+                            }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
@@ -246,7 +189,6 @@ fun CartScreen(navController: NavController) {
                     val total = cartItems.sumOf { it.price * it.quantity }
                     OrderButtonComponent(
                         buttonText = if (selectedTabIndex == 1) "Sipariş Ver" else "Ödemeye Geç",
-                        isButtonEnabled = cartItems.isNotEmpty() && selectedTable != null,
                         onButtonClick = {  },
                         topContent = {
                             if (selectedTabIndex == 0){
@@ -259,7 +201,7 @@ fun CartScreen(navController: NavController) {
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
+                                        QText(
                                             text = "Toplam",
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Medium
@@ -277,8 +219,6 @@ fun CartScreen(navController: NavController) {
                                 }
                             }
                         },
-                        showWarning = cartItems.isNotEmpty() && selectedTable == null,
-                        warningText = "Lütfen sipariş vermek için önce bir masa seçin."
                     )
                 }
             }

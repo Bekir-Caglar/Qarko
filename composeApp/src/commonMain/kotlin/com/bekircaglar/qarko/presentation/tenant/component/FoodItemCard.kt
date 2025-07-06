@@ -33,6 +33,7 @@ import coil3.compose.AsyncImage
 import com.bekircaglar.qarko.darkBlue
 import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.gray
+import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.primary
 import com.bekircaglar.qarko.white
 import org.jetbrains.compose.resources.painterResource
@@ -64,7 +65,7 @@ fun FoodItemCard(
                     .weight(1f)
                     .padding(end = 8.dp)
             ) {
-                Text(
+                QText(
                     text = item.name,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
@@ -73,7 +74,7 @@ fun FoodItemCard(
                     modifier = Modifier.padding(start = 4.dp, top = 4.dp)
                 )
                 Spacer(Modifier.height(4.dp))
-                Text(
+                QText(
                     text = item.info,
                     color = gray,
                     fontSize = 13.sp,
@@ -82,7 +83,7 @@ fun FoodItemCard(
                 )
 
                 Spacer(Modifier.weight(1f))
-                Text(
+                QText(
                     text = item.price,
                     color = darkBlue,
                     fontWeight = FontWeight.Bold,

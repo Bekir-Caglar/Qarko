@@ -52,7 +52,7 @@ fun CashPaymentTab(cartItems: MutableList<CartItemData>) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 160.dp) // Ödeme bölümünün ve uyarı metninin yaklaşık yüksekliği kadar alt boşluk
+            contentPadding = PaddingValues(bottom = 160.dp)
         ) {
 
             if (cartItems.isEmpty()) {

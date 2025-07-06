@@ -22,8 +22,10 @@ import androidx.navigation.NavController
 import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.darkPrimary
 import com.bekircaglar.qarko.navigation.Screen
+import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.primary
 import com.bekircaglar.qarko.surfaceGray
+import com.bekircaglar.qarko.util.QarkoTypography
 import com.bekircaglar.qarko.white
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
@@ -99,17 +101,15 @@ fun WelcomeScreen(navController: NavController) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
                     ) {
-                        Text(
+                        QText(
                             text = "Masana Özel Menüyü Keşfet",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
+                            textStyle = QarkoTypography.titleLarge,
                             color = darkPrimary,
                             textAlign = TextAlign.Center,
-                            lineHeight = 30.sp
                         )
 
 
-                        Text(
+                        QText(
                             text = "Masadaki QR kodu okutarak menüyü gör ve sipariş oluştur!",
                             fontSize = 16.sp,
                             color = black,
@@ -144,8 +144,8 @@ fun WelcomeScreen(navController: NavController) {
                         tint = Color.White
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "QR Kodunu Oku",
+                    QText(
+                        text = "QR Kodunu Okut",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
@@ -170,7 +170,7 @@ fun WelcomeScreen(navController: NavController) {
                     modifier = Modifier.size(22.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
+                QText(
                     text = "Menüyü Elle Gözat",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium

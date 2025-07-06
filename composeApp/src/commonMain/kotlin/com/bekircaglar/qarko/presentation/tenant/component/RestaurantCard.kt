@@ -1,4 +1,4 @@
-package com.bekircaglar.qarko.presentation.feed.component
+package com.bekircaglar.qarko.presentation.tenant.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

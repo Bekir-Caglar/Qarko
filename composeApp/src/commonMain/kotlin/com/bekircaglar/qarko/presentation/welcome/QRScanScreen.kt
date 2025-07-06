@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.navigation.NavController
 import com.bekircaglar.qarko.App
 import com.bekircaglar.qarko.navigation.Screen
+import com.bekircaglar.qarko.presentation.common.components.QText
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -127,7 +128,7 @@ fun QRScanScreen(navController: NavController) {
                 containerColor = Color.White.copy(alpha = 0.9f)
             )
         ) {
-            Text(
+            QText(
                 text = "QR kodu çerçeve içine getirin",
                 modifier = Modifier.padding(16.dp),
                 textAlign = TextAlign.Center
