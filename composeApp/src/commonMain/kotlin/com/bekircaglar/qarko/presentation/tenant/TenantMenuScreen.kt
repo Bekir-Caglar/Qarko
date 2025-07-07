@@ -99,6 +99,8 @@ fun TenantMenuScreen(navController: NavController) {
         "Yan Ürünler"
     )
 
+    val commonAllergens = emptyList<Allergen>()
+
     val categorizedFoods = mapOf(
         "Favoriler" to listOf(
             FoodItem(
@@ -314,7 +316,8 @@ fun TenantMenuScreen(navController: NavController) {
             bottomBar = {
                 AppBottomBar(
                     navController = navController,
-                    currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: "",
+                    currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                        ?: "",
                 )
             },
             topBar = {
@@ -566,34 +569,3 @@ fun TenantMenuScreen(navController: NavController) {
         }
     }
 }
-
-@Composable
-fun CategoryChip(text: String) {
-    Surface(
-        color = Color(0xFFF2F2F2),
-        shape = RoundedCornerShape(16.dp),
-    ) {
-        QText(
-            text = text,
-            color = Color.DarkGray,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AllergenIcon(allergen: Allergen) {
-    AsyncImage(
-        model = allergen.iconUrl,
-        contentDescription = allergen.name,
-        contentScale = ContentScale.Fit,
-        modifier = Modifier
-            .size(16.dp)
-            .clip(CircleShape)
-    )
-}
-
-val commonAllergens = emptyList<Allergen>()

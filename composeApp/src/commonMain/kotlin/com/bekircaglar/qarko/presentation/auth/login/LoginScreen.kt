@@ -2,6 +2,7 @@ package com.bekircaglar.qarko.presentation.auth.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -30,7 +32,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -89,6 +94,9 @@ fun LoginScreen(navController: NavController) {
             )
         }
     ) {
+
+        val focusManager = LocalFocusManager.current
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -142,7 +150,16 @@ fun LoginScreen(navController: NavController) {
                                 modifier = Modifier.size(22.dp)
                             )
                         },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.moveFocus(FocusDirection.Next)
+                            }
+                        ),
+                        modifier = Modifier.focusable(true)
                     )
                     Spacer(modifier = Modifier.size(16.dp))
                     QTextField(
