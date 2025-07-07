@@ -2,6 +2,7 @@ package com.bekircaglar.qarko.presentation.auth.register
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -30,7 +34,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -87,12 +93,16 @@ fun RegisterScreen(navController: NavController) {
             )
         }
     ) {
+        val verticalScrollState = rememberScrollState()
+        val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(white)
                 .padding(it)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .verticalScroll(state = verticalScrollState, enabled = true),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
@@ -131,7 +141,16 @@ fun RegisterScreen(navController: NavController) {
                         modifier = Modifier.size(22.dp)
                     )
                 },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusManager.moveFocus(FocusDirection.Next)
+                    }
+                ),
+
             )
 
             Spacer(modifier = Modifier.size(12.dp))
@@ -148,7 +167,16 @@ fun RegisterScreen(navController: NavController) {
                         modifier = Modifier.size(22.dp)
                     )
                 },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusManager.moveFocus(FocusDirection.Next)
+                    }
+                ),
+
             )
 
             Spacer(modifier = Modifier.size(12.dp))
@@ -175,7 +203,15 @@ fun RegisterScreen(navController: NavController) {
                         )
                     }
                 },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.moveFocus(FocusDirection.Down)
+                    }
+                ),
             )
 
             Spacer(modifier = Modifier.size(12.dp))
