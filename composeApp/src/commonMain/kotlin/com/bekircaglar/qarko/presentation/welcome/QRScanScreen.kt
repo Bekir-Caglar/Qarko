@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.navigation.NavController
+import com.bekircaglar.getPlatformName
 import com.bekircaglar.qarko.App
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.common.components.QText
@@ -48,6 +49,10 @@ fun QRScanScreen(navController: NavController) {
             Res.readBytes("files/qr_border.json").decodeToString()
         )
     }
+
+    val isPlatformAndroid by remember { mutableStateOf(getPlatformName() == "ANDROID") }
+
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (isScanning) {
@@ -106,7 +111,10 @@ fun QRScanScreen(navController: NavController) {
             },
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(16.dp)
+                .padding(top = 16.dp)
+                .then(
+                    if (isPlatformAndroid) Modifier else Modifier.padding(top = 32.dp)
+                )
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,

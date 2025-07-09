@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -18,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.lighterGray
 import com.bekircaglar.qarko.navigation.Screen
@@ -60,7 +62,7 @@ fun AuthScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = white,
-                    navigationIconContentColor = Color.Black
+                    navigationIconContentColor = black
                 )
             )
         },
@@ -133,6 +135,7 @@ fun AuthScreen(
                         Image(
                             painter = painterResource(Res.drawable.apple_logo_black),
                             contentDescription = "logo",
+                            colorFilter = ColorFilter.tint(black),
                             modifier = Modifier.size(24.dp)
                         )
                     },

@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.util.toPriceString
 import org.jetbrains.compose.resources.painterResource
@@ -62,7 +63,7 @@ fun PaymentMethodRow(
                 Text(
                     text = "Ziraat kartım",
                     fontSize = 16.sp,
-                    color = Color.Black,
+                    color = black,
                 )
 
                 Text(

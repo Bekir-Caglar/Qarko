@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,7 +39,7 @@ import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.qr
 
 
-@OptIn(ExperimentalResourceApi::class)
+@OptIn(ExperimentalResourceApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun WelcomeScreen(navController: NavController) {
 
@@ -49,28 +50,37 @@ fun WelcomeScreen(navController: NavController) {
     }
     val progress by animateLottieCompositionAsState(composition)
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(surfaceGray)
-    ) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                ),
+                title = {},
+                actions = {}
+            )
+        },
+        containerColor = surfaceGray
+    ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Ana içerik
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
+                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
                     .clip(RoundedCornerShape(16.dp)),
                 colors = CardDefaults.cardColors(containerColor = white),
-                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
             ) {
                 Column(
                     modifier = Modifier
@@ -79,7 +89,6 @@ fun WelcomeScreen(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-
                     Box(
                         modifier = Modifier,
                         contentAlignment = Alignment.Center
@@ -108,7 +117,6 @@ fun WelcomeScreen(navController: NavController) {
                             textAlign = TextAlign.Center,
                         )
 
-
                         QText(
                             text = "Masadaki QR kodu okutarak menüyü gör ve sipariş oluştur!",
                             fontSize = 16.sp,
@@ -123,6 +131,7 @@ fun WelcomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // QR Kod Butonu
             Button(
                 onClick = {
                     navController.navigate(Screen.QRScan.route) {
@@ -146,8 +155,7 @@ fun WelcomeScreen(navController: NavController) {
                     Spacer(modifier = Modifier.width(12.dp))
                     QText(
                         text = "QR Kodunu Okut",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        textStyle = QarkoTypography.titleMedium,
                         color = Color.White
                     )
                 }
@@ -155,6 +163,7 @@ fun WelcomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Gözat Butonu
             OutlinedButton(
                 onClick = {},
                 modifier = Modifier
@@ -172,8 +181,7 @@ fun WelcomeScreen(navController: NavController) {
                 Spacer(modifier = Modifier.width(8.dp))
                 QText(
                     text = "Menüyü Elle Gözat",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    textStyle = QarkoTypography.titleMedium
                 )
             }
 
