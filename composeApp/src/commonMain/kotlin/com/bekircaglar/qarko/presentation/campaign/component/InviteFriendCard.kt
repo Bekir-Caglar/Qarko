@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.bekircaglar.qarko.lightGray
+import com.bekircaglar.qarko.lighterGray
 import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.campaign.component.CampaignItem
@@ -63,7 +64,7 @@ fun InviteFriendCard(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = white)
     ) {
         Column {
             // Üst mor başlık alanı
@@ -108,7 +109,7 @@ fun InviteFriendCard(
                     tint = primary,
                     modifier = Modifier
                         .size(30.dp)
-                        .background(white, shape = RoundedCornerShape(12.dp))
+                        .background(lighterGray, shape = RoundedCornerShape(12.dp))
                         .padding(4.dp)
                 )
             }

@@ -91,16 +91,6 @@ fun FoodDetailScreen(navController: NavController) {
         IngredientWithIcon("Karabiber", Icons.Default.FavoriteBorder)
     )
 
-    // Animation for entry (screen-wide)
-    val enterTransition = rememberInfiniteTransition(label = "screen transition")
-    val bgAlpha by enterTransition.animateFloat(
-        initialValue = 0.85f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "bgAlpha"
-    )
 
     Scaffold(
         modifier = Modifier,
@@ -113,7 +103,7 @@ fun FoodDetailScreen(navController: NavController) {
                 CenterAlignedTopAppBar(
                     title = {
                         QText(
-                            text = "Yemek Detayı",
+                            text = "Ürün Detayı",
                             color = darkGray,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
@@ -123,11 +113,7 @@ fun FoodDetailScreen(navController: NavController) {
                         containerColor = white
                     ),
                     navigationIcon = {
-                        BackButton(
-                            iconColor = black,
-                            backgroundColor = lightGray.copy(0.6f),
-                            modifier = Modifier.padding(start = 8.dp)
-                        ) {
+                        BackButton {
                             navController.popBackStack()
                         }
                     },
@@ -136,7 +122,6 @@ fun FoodDetailScreen(navController: NavController) {
                         val favTransition = remember { Animatable(1f) }
                         IconButton(
                             onClick = {
-                                // Favori ikonunu animasyonla büyüt/küçült
                                 scope.launch {
                                     favTransition.animateTo(
                                         targetValue = 1.25f,
@@ -154,24 +139,20 @@ fun FoodDetailScreen(navController: NavController) {
                                     scaleX = favTransition.value
                                     scaleY = favTransition.value
                                 }
-                                .background(
-                                    color = lightGray.copy(0.6f),
-                                    shape = CircleShape
-                                )
                                 .size(36.dp)
                         ) {
                             Icon(
                                 painter = painterResource(Res.drawable.favourite),
                                 contentDescription = "Favori",
                                 tint = black,
-                                modifier = Modifier.padding(10.dp)
+                                modifier = Modifier.padding(8.dp)
                             )
                         }
                     }
                 )
             }
         },
-        containerColor = white.copy(alpha = bgAlpha)
+        containerColor = white
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -464,14 +445,14 @@ fun FoodDetailScreen(navController: NavController) {
                         modifier = Modifier
                             .shadow(2.dp, RoundedCornerShape(12.dp))
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF5F5F5))
+                            .background(lighterGray)
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         IconButton(
                             enabled = quantity > 1,
                             onClick = { quantity-- },
                             modifier = Modifier
-                                .size(36.dp),
+                                .size(32.dp),
                             colors = IconButtonDefaults.iconButtonColors().copy(
                                 contentColor = darkBlue
                             )
@@ -496,7 +477,7 @@ fun FoodDetailScreen(navController: NavController) {
                         IconButton(
                             onClick = { quantity++ },
                             modifier = Modifier
-                                .size(36.dp),
+                                .size(32.dp),
                             colors = IconButtonDefaults.iconButtonColors().copy(
                                 contentColor = darkBlue
                             )

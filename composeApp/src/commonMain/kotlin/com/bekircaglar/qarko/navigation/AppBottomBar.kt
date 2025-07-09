@@ -3,19 +3,27 @@ package com.bekircaglar.qarko.navigation
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil3.compose.AsyncImagePainter.State.Empty.painter
 import com.bekircaglar.getPlatformName
 import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.darkPrimary
@@ -23,11 +31,8 @@ import com.bekircaglar.qarko.lightBlue
 import com.bekircaglar.qarko.lightGray
 import com.bekircaglar.qarko.primary
 import com.bekircaglar.qarko.white
-import io.ktor.util.Platform
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.cart
-import qarko.composeapp.generated.resources.cart_filled
 import qarko.composeapp.generated.resources.home
 import qarko.composeapp.generated.resources.home_filled
 import qarko.composeapp.generated.resources.offer
@@ -57,8 +62,7 @@ fun AppBottomBar(
         )
 
         NavigationBar(
-            modifier = modifier.background(white).padding(horizontal = 16.dp).height(70.dp),
-            tonalElevation = 8.dp,
+            modifier = modifier.background(white).padding(horizontal = 16.dp).height(72.dp),
             containerColor = white,
         ) {
             items.forEach { item ->
@@ -79,7 +83,7 @@ fun AppBottomBar(
                     },
                     icon = {
                         val iconSize = if (selected) {
-                            if (!isAndroid) 24.dp else 22.dp
+                            if (!isAndroid) 22.dp else 20.dp
                         } else {
                             if (!isAndroid) 22.dp else 20.dp
                         }

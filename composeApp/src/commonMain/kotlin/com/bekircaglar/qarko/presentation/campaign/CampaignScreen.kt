@@ -29,10 +29,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.lightGray
 import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Screen
@@ -136,7 +138,7 @@ fun CampaignScreen(navController: NavController) {
                     TopAppBar(
                         colors =  TopAppBarDefaults.topAppBarColors(
                             containerColor = white,
-                            titleContentColor = primary
+                            titleContentColor = black
                         ),
                         title = {
                             QText(
@@ -155,12 +157,11 @@ fun CampaignScreen(navController: NavController) {
                     currentRoute = Screen.Campaign.route
                 )
             },
-            containerColor = white
+            containerColor = surfaceGray
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(surfaceGray.copy(0.5f))
                     .padding(it)
                     .padding(horizontal = 16.dp)
                     .padding(top = 16.dp)

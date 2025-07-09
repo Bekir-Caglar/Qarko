@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.bekircaglar.qarko.util.QarkoTypography
 
 // QarkoColors data class to hold all custom colors
 data class QarkoColors(
@@ -38,7 +39,7 @@ private val LightQarkoColors = QarkoColors(
     lightGray = Color(0xFFE0DFDF),
     lighterGray = Color(0xFFECECEC),
     darkGray = Color(0xFF4B4B4B),
-    surfaceGray = Color(0xFFf5f5f5),
+    surfaceGray = Color(0xFFFAFAFA),
     orange = Color(0xFFfb7433),
     darkBlue = Color(0xFF132C33),
     lightBlue = Color(0xFFebf0f4),
@@ -103,7 +104,7 @@ fun QarkoTheme(
     CompositionLocalProvider(LocalQarkoColors provides colors) {
         MaterialTheme(
             colorScheme = materialColors,
-            typography = Typography,
+            typography = QarkoTypography,
             content = content
         )
     }
@@ -115,5 +116,3 @@ object QarkoTheme {
         @Composable
         get() = LocalQarkoColors.current
 }
-
-private val Typography = androidx.compose.material3.Typography() // Define your typography styles here if needed.

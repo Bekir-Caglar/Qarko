@@ -36,12 +36,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.auth.SignInPrompt
@@ -78,8 +80,8 @@ fun RegisterScreen(navController: NavController) {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = white,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black
+                    titleContentColor = black,
+                    navigationIconContentColor = black
                 ),
                 title = {},
                 navigationIcon = {
@@ -282,6 +284,7 @@ fun RegisterScreen(navController: NavController) {
                         Image(
                             painter = painterResource(Res.drawable.apple_logo_black),
                             contentDescription = "Facebook Logo",
+                            colorFilter = ColorFilter.tint(black),
                             modifier = Modifier.size(24.dp)
                         )
 

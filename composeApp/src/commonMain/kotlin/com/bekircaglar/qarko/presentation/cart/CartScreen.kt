@@ -44,6 +44,7 @@ import com.bekircaglar.qarko.presentation.cart.component.GenericTabRow
 import com.bekircaglar.qarko.presentation.cart.component.OrderButtonComponent
 import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodRow
 import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodSheet
+import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.util.toPriceString
 import com.bekircaglar.qarko.white
@@ -119,20 +120,8 @@ fun CartScreen(navController: NavController) {
                     }
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack()
-                        },
-                        modifier = Modifier
-                    ) {
-
-                        Icon(
-                            painter = painterResource(Res.drawable.arrow_left),
-                            contentDescription = "back",
-                            tint = black,
-                            modifier = Modifier.size(16.dp)
-                        )
-
+                    BackButton(){
+                        navController.popBackStack()
                     }
                 }
             )

@@ -60,15 +60,18 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil3.compose.AsyncImage
+import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.darkBlue
 import com.bekircaglar.qarko.darkPrimary
 import com.bekircaglar.qarko.data.model.Allergen
 import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.lightGray
+import com.bekircaglar.qarko.lighterGray
 import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.common.components.QText
+import com.bekircaglar.qarko.presentation.common.theme.QarkoTheme
 import com.bekircaglar.qarko.presentation.tenant.component.FoodItemCard
 import com.bekircaglar.qarko.primary
 import com.bekircaglar.qarko.surfaceGray
@@ -373,7 +376,7 @@ fun TenantMenuScreen(navController: NavController) {
                 )
 
             },
-            containerColor = Color.White
+            containerColor = surfaceGray
         ) { innerPadding ->
 
             Column(
@@ -396,12 +399,12 @@ fun TenantMenuScreen(navController: NavController) {
                             text = "IF Sokak",
                             fontSize = 22.sp,
                             textStyle = QarkoTypography.titleMedium,
-                            color = Color.Black
+                            color = black
                         )
                         Spacer(Modifier.height(2.dp))
                         QText(
                             text = "Fast Food, Sokak Lezzetleri, Alkol",
-                            color = Color.Gray,
+                            color = gray,
                             fontSize = 14.sp
                         )
                     }
@@ -424,7 +427,7 @@ fun TenantMenuScreen(navController: NavController) {
                             )
                             QText(
                                 "09:00 - 23:00",
-                                color = Color.Black,
+                                color = black,
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(start = 4.dp)
                             )
@@ -439,7 +442,7 @@ fun TenantMenuScreen(navController: NavController) {
                             )
                             QText(
                                 "Çayyolu, Ankara",
-                                color = Color.Black,
+                                color = black,
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(start = 4.dp)
                             )
@@ -467,7 +470,7 @@ fun TenantMenuScreen(navController: NavController) {
                 QText(
                     text = "Kategoriler",
                     color = darkPrimary,
-                    textStyle = QarkoTypography.titleSmall,
+                    textStyle = QarkoTypography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -492,9 +495,7 @@ fun TenantMenuScreen(navController: NavController) {
                                 )
                         ) {
                             Surface(
-                                color = if (selectedCategory.value == category) primary.copy(alpha = 0.2f) else Color(
-                                    0xFFF2F2F2
-                                ),
+                                color = if (selectedCategory.value == category) primary.copy(alpha = 0.2f) else lighterGray,
                                 shape = RoundedCornerShape(10.dp),
                                 border = if (selectedCategory.value == category) BorderStroke(
                                     1.dp,
@@ -503,7 +504,7 @@ fun TenantMenuScreen(navController: NavController) {
                             ) {
                                 QText(
                                     text = category,
-                                    color = if (selectedCategory.value == category) primary else Color.DarkGray,
+                                    color = if (selectedCategory.value == category) primary else gray,
                                     fontWeight = if (selectedCategory.value == category) Bold else FontWeight.Normal,
                                     fontSize = 14.sp,
                                     modifier = Modifier.padding(
@@ -527,7 +528,7 @@ fun TenantMenuScreen(navController: NavController) {
                     items(allItems.size) { index ->
                         when (val item = allItems[index]) {
                             is String -> {
-                                Text(
+                                QText(
                                     text = item,
                                     fontWeight = Bold,
                                     fontSize = 18.sp,
