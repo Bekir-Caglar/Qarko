@@ -26,17 +26,26 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -50,6 +59,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
@@ -70,23 +80,37 @@ import com.bekircaglar.qarko.lightGray
 import com.bekircaglar.qarko.lighterGray
 import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Screen
+import com.bekircaglar.qarko.presentation.common.components.QSwitch
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.QarkoTheme
+import com.bekircaglar.qarko.presentation.tenant.component.DrawerContent
 import com.bekircaglar.qarko.presentation.tenant.component.FoodItemCard
+import com.bekircaglar.qarko.presentation.tenant.component.SettingsMenuItem
 import com.bekircaglar.qarko.primary
 import com.bekircaglar.qarko.surfaceGray
 import com.bekircaglar.qarko.util.QarkoFontFamily
 import com.bekircaglar.qarko.util.QarkoTypography
 import com.bekircaglar.qarko.util.createQarkoTypography
 import com.bekircaglar.qarko.white
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
+import qarko.composeapp.generated.resources.arrow_right
 import qarko.composeapp.generated.resources.clock
+import qarko.composeapp.generated.resources.exit
+import qarko.composeapp.generated.resources.facebook_logo
 import qarko.composeapp.generated.resources.ifsokak_logo
+import qarko.composeapp.generated.resources.insta_logo
+import qarko.composeapp.generated.resources.language
 import qarko.composeapp.generated.resources.location
+import qarko.composeapp.generated.resources.menu_left
 import qarko.composeapp.generated.resources.qr
+import qarko.composeapp.generated.resources.settings_menu
 import qarko.composeapp.generated.resources.shopping_cart
+import qarko.composeapp.generated.resources.sun
+import qarko.composeapp.generated.resources.x_logo
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -269,6 +293,9 @@ fun TenantMenuScreen(navController: NavController) {
     val selectedCategory = remember { mutableStateOf(menuCategories.firstOrNull() ?: "") }
     val chipListState = rememberLazyListState()
 
+    // Drawer state
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
     LaunchedEffect(selectedCategory.value) {
         val index = menuCategories.indexOf(selectedCategory.value)
         if (index >= 0) {
@@ -313,260 +340,229 @@ fun TenantMenuScreen(navController: NavController) {
             }
         }
     }
-    Box() {
 
-        Scaffold(
-            bottomBar = {
-                AppBottomBar(
-                    navController = navController,
-                    currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-                        ?: "",
-                )
-            },
-            topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors().copy(
-                        containerColor = white
-                    ),
-                    title = {
-                        Image(
-                            painter = painterResource(Res.drawable.ifsokak_logo),
-                            contentDescription = "logo",
-                            colorFilter = ColorFilter.tint(Color(0xFFf4244a)),
-                        )
-                    },
-                    actions = {
-                        Box(modifier = Modifier.padding(end = 16.dp)) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            DrawerContent(
+                onChangeLanguage = {
+                    coroutineScope.launch {
+                        drawerState.close()
+                    }
+                },
+                onChangeTheme = {
+                    coroutineScope.launch {
+                        drawerState.close()
+                    }
+                },
+                onExitMenu = {
+                    coroutineScope.launch {
+                        drawerState.close()
+                    }
+                },
+                onLogout = {
+                    coroutineScope.launch {
+                        drawerState.close()
+                    }
+                }
+            )
+        }
+    ) {
+        Box() {
+            Scaffold(
+                bottomBar = {
+                    AppBottomBar(
+                        navController = navController,
+                        currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                            ?: "",
+                    )
+                },
+                topBar = {
+                    TopAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors().copy(
+                            containerColor = white
+                        ),
+                        title = {
+                            Image(
+                                painter = painterResource(Res.drawable.ifsokak_logo),
+                                contentDescription = "logo",
+                                colorFilter = ColorFilter.tint(Color(0xFFf4244a)),
+                            )
+                        },
+                        navigationIcon = {
                             IconButton(
                                 onClick = {
-                                    navController.navigate(Screen.Cart.route)
-                                },
-                                modifier = Modifier
-                                    .padding(1.dp)
-                                    .background(darkBlue, CircleShape)
+                                    coroutineScope.launch {
+                                        drawerState.open()
+                                    }
+                                }
                             ) {
-                                Image(
-                                    painter = painterResource(Res.drawable.shopping_cart),
+                                Icon(
+                                    painter = painterResource(Res.drawable.settings_menu),
                                     contentDescription = "Menu",
-                                    colorFilter = ColorFilter.tint(white),
-                                    modifier = Modifier.padding(12.dp),
+                                    tint = primary,
+                                    modifier = Modifier.size(24.dp)
                                 )
-
                             }
+                        },
+                        actions = {
+                            Box(modifier = Modifier.padding(end = 16.dp)) {
+                                IconButton(
+                                    onClick = {
+                                        navController.navigate(Screen.Cart.route)
+                                    },
+                                    modifier = Modifier
+                                        .padding(1.dp)
+                                        .background(darkBlue, CircleShape)
+                                ) {
+                                    Image(
+                                        painter = painterResource(Res.drawable.shopping_cart),
+                                        contentDescription = "Menu",
+                                        colorFilter = ColorFilter.tint(white),
+                                        modifier = Modifier.padding(12.dp),
+                                    )
+
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(CircleShape)
+                                        .background(primary)
+                                        .align(Alignment.TopEnd)
+                                ) {
+                                    QText(
+                                        text = "2",
+                                        color = white,
+                                        fontSize = 12.sp,
+                                        fontWeight = Bold,
+                                        lineHeight = 16.sp,
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .padding(2.dp)
+                                    )
+                                }
+                            }
+                        }
+                    )
+
+                },
+                containerColor = surfaceGray
+            ) { innerPadding ->
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .padding(innerPadding)
+                        .padding(horizontal = 16.dp)
+                ) {
+
+                    Spacer(modifier = Modifier.size(16.dp))
+
+                    QText(
+                        text = "Kategoriler",
+                        color = darkPrimary,
+                        textStyle = QarkoTypography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    LazyRow(
+                        state = chipListState,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 8.dp)
+                    ) {
+                        items(menuCategories) { category ->
                             Box(
                                 modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(CircleShape)
-                                    .background(primary)
-                                    .align(Alignment.TopEnd)
-                            ) {
-                                QText(
-                                    text = "2",
-                                    color = white,
-                                    fontSize = 12.sp,
-                                    fontWeight = Bold,
-                                    lineHeight = 16.sp,
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .padding(2.dp)
-                                )
-                            }
-                        }
-                    }
-                )
-
-            },
-            containerColor = surfaceGray
-        ) { innerPadding ->
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
-            ) {
-
-                var searchText by remember { mutableStateOf("") }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column {
-                        QText(
-                            text = "IF Sokak",
-                            fontSize = 22.sp,
-                            textStyle = QarkoTypography.titleMedium,
-                            color = black
-                        )
-                        Spacer(Modifier.height(2.dp))
-                        QText(
-                            text = "Fast Food, Sokak Lezzetleri, Alkol",
-                            color = gray,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                val scrollState = rememberScrollState()
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().horizontalScroll(scrollState),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(Res.drawable.clock),
-                                contentDescription = "Saat",
-                                tint = gray,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            QText(
-                                "09:00 - 23:00",
-                                color = black,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(start = 4.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(Res.drawable.location),
-                                contentDescription = "Uzaklık",
-                                tint = gray,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            QText(
-                                "Çayyolu, Ankara",
-                                color = black,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(start = 4.dp)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                HorizontalDivider(color = lightGray)
-
-//                Spacer(Modifier.height(8.dp))
-//
-//                SearchTextField(
-//                    text = searchText,
-//                    onValueChange = {
-//                        searchText = it
-//                    },
-//                    placeholder = "Arama yapın...",
-//                )
-                Spacer(modifier = Modifier.size(16.dp))
-
-
-
-                QText(
-                    text = "Kategoriler",
-                    color = darkPrimary,
-                    textStyle = QarkoTypography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                LazyRow(
-                    state = chipListState,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 8.dp)
-                ) {
-                    items(menuCategories) { category ->
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .combinedClickable(
-                                    onClick = {
-                                        selectedCategory.value = category
-                                        categoryIndices[category]?.let { index ->
-                                            coroutineScope.launch {
-                                                lazyListState.animateScrollToItem(index)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .combinedClickable(
+                                        onClick = {
+                                            selectedCategory.value = category
+                                            categoryIndices[category]?.let { index ->
+                                                coroutineScope.launch {
+                                                    lazyListState.animateScrollToItem(index)
+                                                }
                                             }
                                         }
-                                    }
-                                )
-                        ) {
-                            Surface(
-                                color = if (selectedCategory.value == category) primary.copy(alpha = 0.2f) else lighterGray,
-                                shape = RoundedCornerShape(10.dp),
-                                border = if (selectedCategory.value == category) BorderStroke(
-                                    1.dp,
-                                    primary
-                                ) else null
+                                    )
                             ) {
-                                QText(
-                                    text = category,
-                                    color = if (selectedCategory.value == category) primary else gray,
-                                    fontWeight = if (selectedCategory.value == category) Bold else FontWeight.Normal,
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.padding(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp
-                                    ),
-                                    textAlign = TextAlign.Center
-                                )
+                                Surface(
+                                    color = if (selectedCategory.value == category) primary.copy(
+                                        alpha = 0.2f
+                                    ) else lighterGray,
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = if (selectedCategory.value == category) BorderStroke(
+                                        1.dp,
+                                        primary
+                                    ) else null
+                                ) {
+                                    QText(
+                                        text = category,
+                                        color = if (selectedCategory.value == category) primary else gray,
+                                        fontWeight = if (selectedCategory.value == category) Bold else FontWeight.Normal,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(
+                                            horizontal = 16.dp,
+                                            vertical = 8.dp
+                                        ),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(16.dp))
 
-                LazyColumn(
-                    state = lazyListState,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
-                ) {
-                    items(allItems.size) { index ->
-                        when (val item = allItems[index]) {
-                            is String -> {
-                                QText(
-                                    text = item,
-                                    fontWeight = Bold,
-                                    fontSize = 18.sp,
-                                    color = darkPrimary,
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-                            }
+                    LazyColumn(
+                        state = lazyListState,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 24.dp)
+                    ) {
+                        items(allItems.size) { index ->
+                            when (val item = allItems[index]) {
+                                is String -> {
+                                    QText(
+                                        text = item,
+                                        fontWeight = Bold,
+                                        fontSize = 18.sp,
+                                        color = darkPrimary,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
 
-                            is FoodItem -> {
-                                FoodItemCard(
-                                    item = item,
-                                    onClick = { navController.navigate(Screen.FoodDetail.route) },
-                                    onAddToCartClick = { /* Sepete ekle işlemi */ }
-                                )
+                                is FoodItem -> {
+                                    FoodItemCard(
+                                        item = item,
+                                        onClick = { navController.navigate(Screen.FoodDetail.route) },
+                                        onAddToCartClick = { /* Sepete ekle işlemi */ }
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .zIndex(2f)
-                .padding(bottom = 24.dp)
-        ) {
-            FloatingActionButton(
-                onClick = { navController.navigate("qr_scan") },
-                containerColor = primary,
-                contentColor = white,
-                modifier = Modifier.size(64.dp)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .zIndex(2f)
+                    .padding(bottom = 24.dp)
             ) {
-                Icon(
-                    painter = painterResource(Res.drawable.qr),
-                    contentDescription = "QR",
-                    modifier = Modifier.size(32.dp)
-                )
+                FloatingActionButton(
+                    onClick = { navController.navigate("qr_scan") },
+                    containerColor = primary,
+                    contentColor = white,
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.qr),
+                        contentDescription = "QR",
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
         }
     }
 }
+

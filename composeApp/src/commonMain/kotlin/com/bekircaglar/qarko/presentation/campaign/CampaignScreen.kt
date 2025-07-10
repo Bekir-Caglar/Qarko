@@ -243,7 +243,6 @@ fun CampaignScreen(navController: NavController) {
                         )
                     }
 
-                    // Alt boşluk için
                     item {
                         Spacer(modifier = Modifier.height(32.dp))
                     }
@@ -253,7 +252,6 @@ fun CampaignScreen(navController: NavController) {
 
         }
 
-        // QR Scan FAB
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
