@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -293,7 +294,6 @@ fun TenantMenuScreen(navController: NavController) {
     val selectedCategory = remember { mutableStateOf(menuCategories.firstOrNull() ?: "") }
     val chipListState = rememberLazyListState()
 
-    // Drawer state
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     LaunchedEffect(selectedCategory.value) {
@@ -351,6 +351,7 @@ fun TenantMenuScreen(navController: NavController) {
                     }
                 },
                 onChangeTheme = {
+
                     coroutineScope.launch {
                         drawerState.close()
                     }
@@ -540,6 +541,10 @@ fun TenantMenuScreen(navController: NavController) {
                                 }
                             }
                         }
+
+                        item{
+                            Spacer(Modifier.padding(32.dp))
+                        }
                     }
                 }
             }
@@ -565,4 +570,3 @@ fun TenantMenuScreen(navController: NavController) {
         }
     }
 }
-

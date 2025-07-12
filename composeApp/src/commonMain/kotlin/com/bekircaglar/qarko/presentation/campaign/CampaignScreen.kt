@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bekircaglar.qarko.black
 import com.bekircaglar.qarko.lightGray
 import com.bekircaglar.qarko.navigation.AppBottomBar
@@ -154,7 +155,8 @@ fun CampaignScreen(navController: NavController) {
             bottomBar = {
                 AppBottomBar(
                     navController = navController,
-                    currentRoute = Screen.Campaign.route
+                    currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                        ?: "",
                 )
             },
             containerColor = surfaceGray

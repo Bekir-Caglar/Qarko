@@ -6,11 +6,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeGestures
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.HorizontalDivider
@@ -18,15 +23,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +44,7 @@ import com.bekircaglar.qarko.gray
 import com.bekircaglar.qarko.lightGray
 import com.bekircaglar.qarko.presentation.common.components.QSwitch
 import com.bekircaglar.qarko.presentation.common.components.QText
+import com.bekircaglar.qarko.presentation.common.theme.LocalThemeController
 import com.bekircaglar.qarko.primary
 import com.bekircaglar.qarko.white
 import org.jetbrains.compose.resources.painterResource
@@ -43,6 +53,7 @@ import qarko.composeapp.generated.resources.arrow_right
 import qarko.composeapp.generated.resources.clock
 import qarko.composeapp.generated.resources.exit
 import qarko.composeapp.generated.resources.facebook_logo
+import qarko.composeapp.generated.resources.food
 import qarko.composeapp.generated.resources.ifsokak_logo
 import qarko.composeapp.generated.resources.insta_logo
 import qarko.composeapp.generated.resources.language
@@ -54,16 +65,18 @@ import qarko.composeapp.generated.resources.x_logo
 @Composable
 fun DrawerContent(
     onChangeLanguage: () -> Unit,
-    onChangeTheme: () -> Unit,
+    onChangeTheme: (Boolean) -> Unit,
     onExitMenu: () -> Unit,
     onLogout: () -> Unit
 ) {
 
-    val isDarkTheme by remember { mutableStateOf(false) }
+    val themeController = LocalThemeController.current
+    val isDarkTheme by remember { mutableStateOf(themeController.isDarkTheme) }
 
 
     ModalDrawerSheet(
         modifier = Modifier.width(320.dp),
+        drawerShape = RoundedCornerShape(0.dp),
         drawerContainerColor = white
     ) {
         Column(
@@ -71,7 +84,6 @@ fun DrawerContent(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // İşletme Bilgileri Header
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -165,7 +177,7 @@ fun DrawerContent(
                     verticalAlignment = Alignment.Top
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.shopping_cart),
+                        painter = painterResource(Res.drawable.food),
                         contentDescription = "Hizmet Alanları",
                         tint = primary,
                         modifier = Modifier.size(16.dp)
@@ -173,13 +185,13 @@ fun DrawerContent(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         QText(
-                            text = "Hizmet Alanları",
+                            text = "Kategoriler",
                             fontSize = 13.sp,
                             color = black,
                             fontWeight = Bold
                         )
                         QText(
-                            text = "• Gel Al • Paket Servis • Online Sipariş",
+                            text = "• Pizza • Burger • Alkol ",
                             fontSize = 12.sp,
                             color = gray
                         )
@@ -322,7 +334,9 @@ fun DrawerContent(
                 QSwitch(
                     scale = 1f,
                     isChecked = isDarkTheme,
-                    onCheckedChange = { },
+                    onCheckedChange = {
+                        themeController.toggleTheme()
+                    },
                     checkedTrackColor = primary,
                     enabled = true,
                     uncheckedTrackColor = gray
@@ -345,7 +359,7 @@ fun DrawerContent(
                 trailingIconInt = Res.drawable.arrow_right,
                 onClick = onLogout
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
 
         }

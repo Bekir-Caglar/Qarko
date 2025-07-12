@@ -66,6 +66,7 @@ kotlin {
 
             implementation (libs.accompanist.systemuicontroller)
 
+            implementation(libs.androidx.appcompat)
         }
         commonMain.dependencies {
 
