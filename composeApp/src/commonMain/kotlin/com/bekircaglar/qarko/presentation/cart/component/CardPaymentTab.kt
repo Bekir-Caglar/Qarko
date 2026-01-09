@@ -20,9 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bekircaglar.qarko.data.model.CartItemData
-import com.bekircaglar.qarko.gray
-import com.bekircaglar.qarko.lighterGray
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.gray
+import com.bekircaglar.qarko.presentation.common.theme.lighterGray
+import com.bekircaglar.qarko.presentation.common.theme.white
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

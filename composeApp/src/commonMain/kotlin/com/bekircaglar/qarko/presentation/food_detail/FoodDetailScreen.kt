@@ -7,12 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -22,28 +19,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import coil3.compose.AsyncImage
-import com.bekircaglar.qarko.*
 import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.data.model.IngredientWithIcon
-import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.presentation.common.components.QText
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.darkBlue
+import com.bekircaglar.qarko.presentation.common.theme.darkGray
+import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
+import com.bekircaglar.qarko.presentation.common.theme.gray
+import com.bekircaglar.qarko.presentation.common.theme.lightGray
+import com.bekircaglar.qarko.presentation.common.theme.lighterGray
+import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.white
+import com.bekircaglar.qarko.presentation.common.theme.yellow
 import kotlinx.coroutines.launch
-import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.add
-import qarko.composeapp.generated.resources.favourite
-import qarko.composeapp.generated.resources.minus
-import qarko.composeapp.generated.resources.star
 import org.jetbrains.compose.resources.painterResource
+import qarko.composeapp.generated.resources.Res
+import qarko.composeapp.generated.resources.ic_heart
+import qarko.composeapp.generated.resources.ic_heart_filled
+import qarko.composeapp.generated.resources.ic_minus
+import qarko.composeapp.generated.resources.ic_plus
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -118,36 +121,37 @@ fun FoodDetailScreen(navController: NavController) {
                         }
                     },
                     actions = {
-                        // Button animated with scale
-                        val favTransition = remember { Animatable(1f) }
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    favTransition.animateTo(
-                                        targetValue = 1.25f,
-                                        animationSpec = tween(120)
-                                    )
-                                    favTransition.animateTo(
-                                        targetValue = 1f,
-                                        animationSpec = tween(120)
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .graphicsLayer {
-                                    scaleX = favTransition.value
-                                    scaleY = favTransition.value
-                                }
-                                .size(36.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(Res.drawable.favourite),
-                                contentDescription = "Favori",
-                                tint = black,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
+                       var isFavorited by remember { mutableStateOf(false) }
+                       val favTransition = remember { Animatable(1f) }
+                       IconButton(
+                           onClick = {
+                               scope.launch {
+                                   favTransition.animateTo(
+                                       targetValue = 1.25f,
+                                       animationSpec = tween(120)
+                                   )
+                                   favTransition.animateTo(
+                                       targetValue = 1f,
+                                       animationSpec = tween(120)
+                                   )
+                                   isFavorited = !isFavorited
+                               }
+                           },
+                           modifier = Modifier
+                               .padding(end = 8.dp)
+                               .graphicsLayer {
+                                   scaleX = favTransition.value
+                                   scaleY = favTransition.value
+                               }
+                               .size(36.dp)
+                       ) {
+                           Icon(
+                               painter = if (isFavorited) painterResource(Res.drawable.ic_heart_filled) else painterResource(Res.drawable.ic_heart),
+                               contentDescription = "Favori",
+                               tint = if (isFavorited) Color.Red else black,
+                               modifier = Modifier.padding(8.dp)
+                           )
+                       }
                     }
                 )
             }
@@ -458,7 +462,7 @@ fun FoodDetailScreen(navController: NavController) {
                             )
                         ) {
                             Icon(
-                                painter = painterResource(Res.drawable.minus),
+                                painter = painterResource(Res.drawable.ic_minus),
                                 contentDescription = "Azalt",
                                 modifier = Modifier.padding(8.dp)
                             )
@@ -483,7 +487,7 @@ fun FoodDetailScreen(navController: NavController) {
                             )
                         ) {
                             Icon(
-                                painter = painterResource(Res.drawable.add),
+                                painter = painterResource(Res.drawable.ic_plus),
                                 contentDescription = "Artır",
                                 modifier = Modifier.padding(8.dp)
                             )
@@ -618,7 +622,7 @@ fun TabButtonAnimated(
                 .width(boxWidth)
                 .background(
                     color = color,
-                    RoundedCornerShape(1.dp)
+                    shape = RoundedCornerShape(1.dp)
                 )
         )
     }

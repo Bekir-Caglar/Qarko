@@ -1,7 +1,6 @@
 package com.bekircaglar.qarko.presentation.welcome
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -11,23 +10,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.darkPrimary
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.common.components.QText
-import com.bekircaglar.qarko.primary
-import com.bekircaglar.qarko.surfaceGray
+import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.surfaceGray
 import com.bekircaglar.qarko.util.QarkoTypography
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.white
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
@@ -36,7 +33,7 @@ import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.qr
+import qarko.composeapp.generated.resources.ic_qr
 
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalMaterial3Api::class)
@@ -147,7 +144,7 @@ fun WelcomeScreen(navController: NavController) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        painter = painterResource(Res.drawable.qr),
+                        painter = painterResource(Res.drawable.ic_qr),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
                         tint = Color.White
@@ -163,7 +160,6 @@ fun WelcomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Gözat Butonu
             OutlinedButton(
                 onClick = {},
                 modifier = Modifier

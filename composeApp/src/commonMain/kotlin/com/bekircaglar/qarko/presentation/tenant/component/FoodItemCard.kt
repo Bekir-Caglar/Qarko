@@ -14,10 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,15 +27,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
-import com.bekircaglar.qarko.darkBlue
+import com.bekircaglar.qarko.presentation.common.theme.darkBlue
 import com.bekircaglar.qarko.data.model.FoodItem
-import com.bekircaglar.qarko.gray
+import com.bekircaglar.qarko.presentation.common.theme.gray
 import com.bekircaglar.qarko.presentation.common.components.QText
-import com.bekircaglar.qarko.primary
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.add
+import qarko.composeapp.generated.resources.ic_plus
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -114,7 +111,7 @@ fun FoodItemCard(
                             .combinedClickable(onClick = onAddToCartClick)
                     ) {
                         Icon(
-                            painter = painterResource(Res.drawable.add),
+                            painter = painterResource(Res.drawable.ic_plus),
                             contentDescription = "Sepete Ekle",
                             tint = primary,
                             modifier = Modifier.padding(8.dp)

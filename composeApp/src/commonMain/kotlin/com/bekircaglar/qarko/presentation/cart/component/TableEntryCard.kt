@@ -1,63 +1,39 @@
 package com.bekircaglar.qarko.presentation.cart.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.bekircaglar.qarko.darkBlue
-import com.bekircaglar.qarko.darkGreen
-import com.bekircaglar.qarko.darkPrimary
-import com.bekircaglar.qarko.data.model.CartItemData
-import com.bekircaglar.qarko.gray
-import com.bekircaglar.qarko.lightBlue
-import com.bekircaglar.qarko.lightGray
-import com.bekircaglar.qarko.lighterGray
-import com.bekircaglar.qarko.primary
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.darkBlue
+import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
+import com.bekircaglar.qarko.presentation.common.theme.gray
+import com.bekircaglar.qarko.presentation.common.theme.lightBlue
+import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.credit_card
-import qarko.composeapp.generated.resources.qr
+import qarko.composeapp.generated.resources.ic_qr
 
 @Composable
 fun TableEntryCard(
@@ -91,7 +67,7 @@ fun TableEntryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.qr),
+                    painter = painterResource(Res.drawable.ic_qr),
                     contentDescription = "QR Code",
                     modifier = Modifier.size(24.dp),
                     tint = if (isTableActive) primary else gray
@@ -156,7 +132,7 @@ fun TableEntryCard(
                     )
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.qr),
+                        painter = painterResource(Res.drawable.ic_qr),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         tint = white

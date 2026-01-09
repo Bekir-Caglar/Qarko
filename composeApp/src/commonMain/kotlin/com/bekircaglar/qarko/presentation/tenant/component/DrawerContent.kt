@@ -6,14 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeGestures
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,43 +19,39 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.gray
-import com.bekircaglar.qarko.lightGray
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.gray
+import com.bekircaglar.qarko.presentation.common.theme.lightGray
 import com.bekircaglar.qarko.presentation.common.components.QSwitch
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.LocalThemeController
-import com.bekircaglar.qarko.primary
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.arrow_right
-import qarko.composeapp.generated.resources.clock
-import qarko.composeapp.generated.resources.exit
 import qarko.composeapp.generated.resources.facebook_logo
-import qarko.composeapp.generated.resources.food
+import qarko.composeapp.generated.resources.ic_angle_right
+import qarko.composeapp.generated.resources.ic_clock
+import qarko.composeapp.generated.resources.ic_exit
+import qarko.composeapp.generated.resources.ic_food
+import qarko.composeapp.generated.resources.ic_language
+import qarko.composeapp.generated.resources.ic_location_marker
+import qarko.composeapp.generated.resources.ic_moon
+import qarko.composeapp.generated.resources.ic_sun
 import qarko.composeapp.generated.resources.ifsokak_logo
 import qarko.composeapp.generated.resources.insta_logo
-import qarko.composeapp.generated.resources.language
-import qarko.composeapp.generated.resources.location
-import qarko.composeapp.generated.resources.shopping_cart
-import qarko.composeapp.generated.resources.sun
 import qarko.composeapp.generated.resources.x_logo
 
 @Composable
@@ -75,7 +67,7 @@ fun DrawerContent(
 
 
     ModalDrawerSheet(
-        modifier = Modifier.width(320.dp),
+        modifier = Modifier.fillMaxWidth(0.7f),
         drawerShape = RoundedCornerShape(0.dp),
         drawerContainerColor = white
     ) {
@@ -88,7 +80,6 @@ fun DrawerContent(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                // Logo ve İşletme Adı
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -122,7 +113,7 @@ fun DrawerContent(
                     verticalAlignment = Alignment.Top
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.location),
+                        painter = painterResource(Res.drawable.ic_location_marker),
                         contentDescription = "Adres",
                         tint = primary,
                         modifier = Modifier.size(16.dp)
@@ -143,7 +134,7 @@ fun DrawerContent(
                     verticalAlignment = Alignment.Top
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.clock),
+                        painter = painterResource(Res.drawable.ic_clock),
                         contentDescription = "Çalışma Saatleri",
                         tint = primary,
                         modifier = Modifier.size(16.dp)
@@ -177,7 +168,7 @@ fun DrawerContent(
                     verticalAlignment = Alignment.Top
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.food),
+                        painter = painterResource(Res.drawable.ic_food),
                         contentDescription = "Hizmet Alanları",
                         tint = primary,
                         modifier = Modifier.size(16.dp)
@@ -276,7 +267,7 @@ fun DrawerContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.language),
+                    painter = painterResource(Res.drawable.ic_language),
                     contentDescription = "Settings Icon",
                     tint = black,
                     modifier = Modifier.size(24.dp)
@@ -315,7 +306,7 @@ fun DrawerContent(
             ) {
 
                 Icon(
-                    painter = painterResource(Res.drawable.sun),
+                    painter = painterResource(if (isDarkTheme) Res.drawable.ic_moon else Res.drawable.ic_sun),
                     contentDescription = "Settings Icon",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
@@ -353,10 +344,10 @@ fun DrawerContent(
 
             SettingsMenuItem(
                 label = "İşletme Menüsünden Çık",
-                iconInt = Res.drawable.exit,
+                iconInt = Res.drawable.ic_exit,
                 iconColor = MaterialTheme.colorScheme.onSurface,
                 textColor = MaterialTheme.colorScheme.onSurface,
-                trailingIconInt = Res.drawable.arrow_right,
+                trailingIconInt = Res.drawable.ic_angle_right,
                 onClick = onLogout
             )
 

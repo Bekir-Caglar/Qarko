@@ -33,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -42,8 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.gray
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.gray
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.auth.SignUpPrompt
 import com.bekircaglar.qarko.presentation.auth.components.LoginOptionButton
@@ -53,15 +52,15 @@ import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.components.QTextField
 import com.bekircaglar.qarko.presentation.common.components.TextCenterDivider
 import com.bekircaglar.qarko.util.QarkoTypography
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.apple_logo_black
-import qarko.composeapp.generated.resources.email
 import qarko.composeapp.generated.resources.facebook_logo
 import qarko.composeapp.generated.resources.google_logo
-import qarko.composeapp.generated.resources.lock_filled
+import qarko.composeapp.generated.resources.ic_email_filled
+import qarko.composeapp.generated.resources.ic_lock_filled
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
@@ -146,7 +145,7 @@ fun LoginScreen(navController: NavController) {
                         placeholder = "E-posta",
                         leadingIcon = {
                             Icon(
-                                painter = painterResource(Res.drawable.email),
+                                painter = painterResource(Res.drawable.ic_email_filled),
                                 contentDescription = "Email Icon",
                                 tint = gray,
                                 modifier = Modifier.size(22.dp)
@@ -173,7 +172,7 @@ fun LoginScreen(navController: NavController) {
                         onPasswordVisibilityChange = { passwordVisible = it },
                         leadingIcon = {
                             Icon(
-                                painter = painterResource(Res.drawable.lock_filled),
+                                painter = painterResource(Res.drawable.ic_lock_filled),
                                 contentDescription = "Şifre",
                                 tint = gray,
                                 modifier = Modifier.size(22.dp)

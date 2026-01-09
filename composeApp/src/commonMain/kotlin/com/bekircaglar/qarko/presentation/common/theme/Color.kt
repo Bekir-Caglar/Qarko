@@ -1,8 +1,7 @@
-package com.bekircaglar.qarko
+package com.bekircaglar.qarko.presentation.common.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.bekircaglar.qarko.presentation.common.theme.QarkoTheme
 
 // Theme-aware color accessors
 val primary: Color 

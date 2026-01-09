@@ -1,14 +1,7 @@
 package com.bekircaglar.qarko.presentation.cart.component
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,53 +9,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.BlendMode.Companion.Color
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.darkBlue
-import com.bekircaglar.qarko.darkGreen
-import com.bekircaglar.qarko.darkPrimary
-import com.bekircaglar.qarko.gray
-import com.bekircaglar.qarko.lightBlue
-import com.bekircaglar.qarko.lighterGray
-import com.bekircaglar.qarko.primary
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.darkBlue
+import com.bekircaglar.qarko.presentation.common.theme.gray
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.add
-import qarko.composeapp.generated.resources.delete
-import qarko.composeapp.generated.resources.minus
+import qarko.composeapp.generated.resources.ic_minus
+import qarko.composeapp.generated.resources.ic_plus
+import qarko.composeapp.generated.resources.ic_trash
 
 @Composable
 fun CartItem(
@@ -139,7 +106,7 @@ fun CartItem(
                         .size(28.dp)
                 ) {
                     Icon(
-                        painter = painterResource(if (quantity > 1) Res.drawable.minus else Res.drawable.delete),
+                        painter = painterResource(if (quantity > 1) Res.drawable.ic_minus else Res.drawable.ic_trash),
                         contentDescription = if (quantity > 1) "Azalt" else "Sil",
                         tint = black,
                         modifier = Modifier.size(14.dp)
@@ -160,7 +127,7 @@ fun CartItem(
                         .size(28.dp)
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.add),
+                        painter = painterResource(Res.drawable.ic_plus),
                         contentDescription = "Artır",
                         tint = black,
                         modifier = Modifier.size(14.dp)

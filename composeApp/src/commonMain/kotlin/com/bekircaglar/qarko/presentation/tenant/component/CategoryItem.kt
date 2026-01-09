@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,10 +19,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.bekircaglar.qarko.black
+import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.data.model.FoodCategory
 import com.bekircaglar.qarko.presentation.common.components.QText
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.white
 
 @Composable
 fun CategoryItem(category: FoodCategory) {

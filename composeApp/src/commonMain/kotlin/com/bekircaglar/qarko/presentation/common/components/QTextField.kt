@@ -1,8 +1,6 @@
 package com.bekircaglar.qarko.presentation.common.components
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -10,7 +8,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -19,16 +16,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
-import com.bekircaglar.qarko.gray
-import com.bekircaglar.qarko.lightGray
-import com.bekircaglar.qarko.lighterGray
+import com.bekircaglar.qarko.presentation.common.theme.gray
+import com.bekircaglar.qarko.presentation.common.theme.lightGray
+import com.bekircaglar.qarko.presentation.common.theme.lighterGray
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.ic_invisible
-import qarko.composeapp.generated.resources.ic_visible
-import qarko.composeapp.generated.resources.search
+import qarko.composeapp.generated.resources.ic_eye
+import qarko.composeapp.generated.resources.ic_eye_crossed
 
 
 @Composable
@@ -66,7 +61,7 @@ fun QTextField(
             {
                 IconButton(onClick = { onPasswordVisibilityChange(!passwordVisible) }) {
                     Icon(
-                        painter = painterResource(if (passwordVisible) Res.drawable.ic_visible else Res.drawable.ic_invisible),
+                        painter = painterResource(if (passwordVisible) Res.drawable.ic_eye else Res.drawable.ic_eye_crossed),
                         contentDescription = if (passwordVisible) "Şifreyi Gizle" else "Şifreyi Göster",
                         tint = gray,
                         modifier = Modifier.size(22.dp)

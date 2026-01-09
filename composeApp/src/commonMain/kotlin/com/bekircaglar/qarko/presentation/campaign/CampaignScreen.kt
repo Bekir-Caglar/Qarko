@@ -29,26 +29,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.lightGray
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.lightGray
 import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.campaign.component.CampaignItem
 import com.bekircaglar.qarko.presentation.campaign.component.InviteFriendCard
 import com.bekircaglar.qarko.presentation.common.components.QText
-import com.bekircaglar.qarko.primary
-import com.bekircaglar.qarko.surfaceGray
+import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.surfaceGray
 import com.bekircaglar.qarko.util.QarkoTypography
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.qr
+import qarko.composeapp.generated.resources.ic_qr
 
 // Dummy kampanya data class'ı
 data class Campaign(
@@ -267,7 +266,7 @@ fun CampaignScreen(navController: NavController) {
                 modifier = Modifier.size(64.dp)
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.qr),
+                    painter = painterResource(Res.drawable.ic_qr),
                     contentDescription = "QR",
                     modifier = Modifier.size(32.dp)
                 )

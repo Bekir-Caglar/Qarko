@@ -2,7 +2,6 @@ package com.bekircaglar.qarko.presentation.auth.register
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -43,8 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.gray
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.gray
 import com.bekircaglar.qarko.navigation.Screen
 import com.bekircaglar.qarko.presentation.auth.SignInPrompt
 import com.bekircaglar.qarko.presentation.auth.components.LoginOptionButton
@@ -53,17 +51,16 @@ import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.components.QTextField
 import com.bekircaglar.qarko.presentation.common.components.TextCenterDivider
 import com.bekircaglar.qarko.util.QarkoTypography
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.apple_logo_black
-import qarko.composeapp.generated.resources.email
 import qarko.composeapp.generated.resources.facebook_logo
 import qarko.composeapp.generated.resources.google_logo
-import qarko.composeapp.generated.resources.lock_filled
-import qarko.composeapp.generated.resources.profile_filled
-
+import qarko.composeapp.generated.resources.ic_email_filled
+import qarko.composeapp.generated.resources.ic_lock_filled
+import qarko.composeapp.generated.resources.ic_profile_filled
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
 @Composable
@@ -137,7 +134,7 @@ fun RegisterScreen(navController: NavController) {
                 placeholder = "İsim ve Soyisim",
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(Res.drawable.profile_filled),
+                        painter = painterResource(Res.drawable.ic_profile_filled),
                         contentDescription = "Profil",
                         tint = gray,
                         modifier = Modifier.size(22.dp)
@@ -163,7 +160,7 @@ fun RegisterScreen(navController: NavController) {
                 placeholder = "E-posta",
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(Res.drawable.email),
+                        painter = painterResource(Res.drawable.ic_email_filled),
                         contentDescription = "Email Icon",
                         tint = gray,
                         modifier = Modifier.size(22.dp)
@@ -227,7 +224,7 @@ fun RegisterScreen(navController: NavController) {
                 onPasswordVisibilityChange = { passwordVisible = it },
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(Res.drawable.lock_filled),
+                        painter = painterResource(Res.drawable.ic_lock_filled),
                         contentDescription = "Şifre",
                         tint = gray,
                         modifier = Modifier.size(22.dp)

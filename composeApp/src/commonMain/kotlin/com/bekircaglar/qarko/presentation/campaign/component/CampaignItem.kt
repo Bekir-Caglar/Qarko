@@ -13,16 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.darkPrimary
-import com.bekircaglar.qarko.gray
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.util.QarkoTypography
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.white
 
 @Composable
 fun CampaignItem(

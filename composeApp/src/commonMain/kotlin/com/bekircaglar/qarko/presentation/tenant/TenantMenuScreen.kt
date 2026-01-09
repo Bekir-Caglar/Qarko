@@ -4,64 +4,46 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.style.TextAlign
@@ -70,48 +52,29 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import coil3.compose.AsyncImage
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.darkBlue
-import com.bekircaglar.qarko.darkPrimary
+import com.bekircaglar.qarko.presentation.common.theme.darkBlue
+import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
 import com.bekircaglar.qarko.data.model.Allergen
 import com.bekircaglar.qarko.data.model.FoodItem
-import com.bekircaglar.qarko.gray
-import com.bekircaglar.qarko.lightGray
-import com.bekircaglar.qarko.lighterGray
+import com.bekircaglar.qarko.presentation.common.theme.gray
+import com.bekircaglar.qarko.presentation.common.theme.lightGray
+import com.bekircaglar.qarko.presentation.common.theme.lighterGray
 import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Screen
-import com.bekircaglar.qarko.presentation.common.components.QSwitch
 import com.bekircaglar.qarko.presentation.common.components.QText
-import com.bekircaglar.qarko.presentation.common.theme.QarkoTheme
 import com.bekircaglar.qarko.presentation.tenant.component.DrawerContent
 import com.bekircaglar.qarko.presentation.tenant.component.FoodItemCard
-import com.bekircaglar.qarko.presentation.tenant.component.SettingsMenuItem
-import com.bekircaglar.qarko.primary
-import com.bekircaglar.qarko.surfaceGray
-import com.bekircaglar.qarko.util.QarkoFontFamily
+import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.surfaceGray
 import com.bekircaglar.qarko.util.QarkoTypography
-import com.bekircaglar.qarko.util.createQarkoTypography
-import com.bekircaglar.qarko.white
-import kotlinx.coroutines.CoroutineScope
+import com.bekircaglar.qarko.presentation.common.theme.white
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.arrow_right
-import qarko.composeapp.generated.resources.clock
-import qarko.composeapp.generated.resources.exit
-import qarko.composeapp.generated.resources.facebook_logo
+import qarko.composeapp.generated.resources.ic_basket
+import qarko.composeapp.generated.resources.ic_qr
+import qarko.composeapp.generated.resources.ic_settings_sliders
 import qarko.composeapp.generated.resources.ifsokak_logo
-import qarko.composeapp.generated.resources.insta_logo
-import qarko.composeapp.generated.resources.language
-import qarko.composeapp.generated.resources.location
-import qarko.composeapp.generated.resources.menu_left
-import qarko.composeapp.generated.resources.qr
-import qarko.composeapp.generated.resources.settings_menu
-import qarko.composeapp.generated.resources.shopping_cart
-import qarko.composeapp.generated.resources.sun
-import qarko.composeapp.generated.resources.x_logo
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -379,72 +342,75 @@ fun TenantMenuScreen(navController: NavController) {
                     )
                 },
                 topBar = {
-                    TopAppBar(
-                        colors = TopAppBarDefaults.topAppBarColors().copy(
-                            containerColor = white
-                        ),
-                        title = {
-                            Image(
-                                painter = painterResource(Res.drawable.ifsokak_logo),
-                                contentDescription = "logo",
-                                colorFilter = ColorFilter.tint(Color(0xFFf4244a)),
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(
-                                onClick = {
-                                    coroutineScope.launch {
-                                        drawerState.open()
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    painter = painterResource(Res.drawable.settings_menu),
-                                    contentDescription = "Menu",
-                                    tint = primary,
-                                    modifier = Modifier.size(24.dp)
+                    Column {
+                        TopAppBar(
+                            colors = TopAppBarDefaults.topAppBarColors().copy(
+                                containerColor = white
+                            ),
+                            title = {
+                                Image(
+                                    painter = painterResource(Res.drawable.ifsokak_logo),
+                                    contentDescription = "logo",
+                                    colorFilter = ColorFilter.tint(Color(0xFFf4244a)),
                                 )
-                            }
-                        },
-                        actions = {
-                            Box(modifier = Modifier.padding(end = 16.dp)) {
+                            },
+                            navigationIcon = {
                                 IconButton(
                                     onClick = {
-                                        navController.navigate(Screen.Cart.route)
-                                    },
-                                    modifier = Modifier
-                                        .padding(1.dp)
-                                        .background(darkBlue, CircleShape)
+                                        coroutineScope.launch {
+                                            drawerState.open()
+                                        }
+                                    }
                                 ) {
-                                    Image(
-                                        painter = painterResource(Res.drawable.shopping_cart),
+                                    Icon(
+                                        painter = painterResource(Res.drawable.ic_settings_sliders),
                                         contentDescription = "Menu",
-                                        colorFilter = ColorFilter.tint(white),
-                                        modifier = Modifier.padding(12.dp),
+                                        tint = primary,
+                                        modifier = Modifier.size(24.dp)
                                     )
-
                                 }
-                                Box(
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(CircleShape)
-                                        .background(primary)
-                                        .align(Alignment.TopEnd)
-                                ) {
-                                    QText(
-                                        text = "2",
-                                        color = white,
-                                        fontSize = 12.sp,
-                                        fontWeight = Bold,
-                                        lineHeight = 16.sp,
+                            },
+                            actions = {
+                                Box(modifier = Modifier.padding(end = 16.dp)) {
+                                    IconButton(
+                                        onClick = {
+                                            navController.navigate(Screen.Cart.route)
+                                        },
                                         modifier = Modifier
-                                            .align(Alignment.Center)
-                                            .padding(2.dp)
-                                    )
+                                            .padding(1.dp)
+                                            .background(darkBlue, CircleShape)
+                                    ) {
+                                        Image(
+                                            painter = painterResource(Res.drawable.ic_basket),
+                                            contentDescription = "Menu",
+                                            colorFilter = ColorFilter.tint(white),
+                                            modifier = Modifier.padding(12.dp),
+                                        )
+
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .background(primary)
+                                            .align(Alignment.TopEnd)
+                                    ) {
+                                        QText(
+                                            text = "2",
+                                            color = white,
+                                            fontSize = 12.sp,
+                                            fontWeight = Bold,
+                                            lineHeight = 16.sp,
+                                            modifier = Modifier
+                                                .align(Alignment.Center)
+                                                .padding(2.dp)
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    )
+                        )
+                        HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = lightGray)
+                    }
 
                 },
                 containerColor = surfaceGray
@@ -561,7 +527,7 @@ fun TenantMenuScreen(navController: NavController) {
                     modifier = Modifier.size(64.dp)
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.qr),
+                        painter = painterResource(Res.drawable.ic_qr),
                         contentDescription = "QR",
                         modifier = Modifier.size(32.dp)
                     )

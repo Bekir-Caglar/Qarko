@@ -25,22 +25,22 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bekircaglar.getPlatformName
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.darkPrimary
-import com.bekircaglar.qarko.lightBlue
-import com.bekircaglar.qarko.lightGray
-import com.bekircaglar.qarko.primary
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
+import com.bekircaglar.qarko.presentation.common.theme.lightBlue
+import com.bekircaglar.qarko.presentation.common.theme.lightGray
+import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.home
-import qarko.composeapp.generated.resources.home_filled
-import qarko.composeapp.generated.resources.offer
-import qarko.composeapp.generated.resources.offer_filled
-import qarko.composeapp.generated.resources.profile
-import qarko.composeapp.generated.resources.profile_filled
-import qarko.composeapp.generated.resources.search
-import qarko.composeapp.generated.resources.search_filled
+import qarko.composeapp.generated.resources.ic_gift
+import qarko.composeapp.generated.resources.ic_gift_filled
+import qarko.composeapp.generated.resources.ic_home
+import qarko.composeapp.generated.resources.ic_home_filled
+import qarko.composeapp.generated.resources.ic_profile
+import qarko.composeapp.generated.resources.ic_profile_filled
+import qarko.composeapp.generated.resources.ic_search
+import qarko.composeapp.generated.resources.ic_search_bold
 
 @Composable
 fun AppBottomBar(
@@ -130,27 +130,27 @@ fun defaultBottomBarItems(): List<BottomBarItem> {
     return listOf(
         BottomBarItem(
             route = Screen.TenantMenu.route,
-            unSelectedIconPainter = painterResource(Res.drawable.home),
-            selectedIconPainter = painterResource(Res.drawable.home_filled),
+            unSelectedIconPainter = painterResource(Res.drawable.ic_home),
+            selectedIconPainter = painterResource(Res.drawable.ic_home_filled),
             label = "Menü"
         ),
         BottomBarItem(
             route = Screen.Search.route,
-            unSelectedIconPainter = painterResource(Res.drawable.search),
-            selectedIconPainter = painterResource(Res.drawable.search_filled),
+            unSelectedIconPainter = painterResource(Res.drawable.ic_search),
+            selectedIconPainter = painterResource(Res.drawable.ic_search_bold),
             label = "Ara"
         ),
         BottomBarItem(route = "", unSelectedIconPainter = null, label = ""),
         BottomBarItem(
             route = Screen.Campaign.route,
-            unSelectedIconPainter = painterResource(Res.drawable.offer),
-            selectedIconPainter = painterResource(Res.drawable.offer_filled),
+            unSelectedIconPainter = painterResource(Res.drawable.ic_gift),
+            selectedIconPainter = painterResource(Res.drawable.ic_gift_filled),
             label = "Kampanyalar"
         ),
         BottomBarItem(
             route = Screen.Auth.route,
-            unSelectedIconPainter = painterResource(Res.drawable.profile),
-            selectedIconPainter = painterResource(Res.drawable.profile_filled),
+            unSelectedIconPainter = painterResource(Res.drawable.ic_profile),
+            selectedIconPainter = painterResource(Res.drawable.ic_profile_filled),
             label = "Profil"
         )
     )

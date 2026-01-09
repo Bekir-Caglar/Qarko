@@ -2,14 +2,13 @@ package com.bekircaglar.qarko.presentation.common.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.bekircaglar.qarko.lighterGray
+import com.bekircaglar.qarko.presentation.common.theme.lighterGray
 
 
 @Composable

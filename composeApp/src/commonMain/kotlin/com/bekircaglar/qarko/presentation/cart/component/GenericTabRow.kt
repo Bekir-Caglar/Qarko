@@ -19,9 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bekircaglar.qarko.gray
-import com.bekircaglar.qarko.primary
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.gray
+import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.white
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -35,11 +35,12 @@ fun GenericTabRow(
     selectedTextColor: Color = white,
     unselectedTextColor: Color = gray,
     backgroundColor: Color = gray.copy(alpha = 0.2f),
-    cornerRadius: Int = 16
+    cornerRadius: Int = 16,
+    horizontalPadding: Int = 32
 ) {
     Row(
         modifier = modifier
-            .padding(horizontal = 32.dp)
+            .padding(horizontal = horizontalPadding.dp)
             .height(48.dp)
             .background(
                 color = backgroundColor,

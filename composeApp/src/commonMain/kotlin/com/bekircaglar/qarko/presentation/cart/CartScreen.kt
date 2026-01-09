@@ -34,8 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.bekircaglar.qarko.black
-import com.bekircaglar.qarko.darkBlue
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.darkBlue
 import com.bekircaglar.qarko.data.model.CartItemData
 import com.bekircaglar.qarko.presentation.cart.component.CardDetails
 import com.bekircaglar.qarko.presentation.cart.component.CardPaymentTab
@@ -47,11 +47,10 @@ import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodSheet
 import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.util.toPriceString
-import com.bekircaglar.qarko.white
+import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.arrow_left
-import qarko.composeapp.generated.resources.delete
+import qarko.composeapp.generated.resources.ic_trash
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -111,7 +110,7 @@ fun CartScreen(navController: NavController) {
                     ) {
 
                         Icon(
-                            painter = painterResource(Res.drawable.delete),
+                            painter = painterResource(Res.drawable.ic_trash),
                             contentDescription = "Delete",
                             tint = black,
                             modifier = Modifier.size(16.dp)
