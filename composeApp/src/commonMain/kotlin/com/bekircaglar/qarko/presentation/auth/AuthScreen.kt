@@ -20,7 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.gray
-import com.bekircaglar.qarko.navigation.Screen
+import com.bekircaglar.qarko.navigation.Login
+import com.bekircaglar.qarko.navigation.Register
 import com.bekircaglar.qarko.presentation.auth.components.LoginOptionButton
 import com.bekircaglar.qarko.presentation.common.components.QButton
 import com.bekircaglar.qarko.presentation.common.components.QText
@@ -146,7 +147,7 @@ fun AuthScreen(
 
             QButton(
                 buttonText = "E posta ile Giriş Yap",
-                onClick = { navController.navigate(Screen.Login.route) },
+                onClick = { navController.navigate(Login) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .offset(y = (-20).dp)
@@ -154,7 +155,7 @@ fun AuthScreen(
             )
 
             SignUpPrompt {
-                navController.navigate(Screen.Register.route)
+                navController.navigate(Register)
             }
 
 
@@ -221,4 +222,3 @@ fun SignInPrompt(onSignInClick: () -> Unit) {
 
 
 }
-

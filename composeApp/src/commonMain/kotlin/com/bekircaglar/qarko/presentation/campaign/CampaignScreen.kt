@@ -37,7 +37,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.lightGray
 import com.bekircaglar.qarko.navigation.AppBottomBar
-import com.bekircaglar.qarko.navigation.Screen
+import com.bekircaglar.qarko.navigation.QRScan
 import com.bekircaglar.qarko.presentation.campaign.component.CampaignItem
 import com.bekircaglar.qarko.presentation.campaign.component.InviteFriendCard
 import com.bekircaglar.qarko.presentation.common.components.QText
@@ -260,7 +260,7 @@ fun CampaignScreen(navController: NavController) {
                 .padding(bottom = 24.dp)
         ) {
             FloatingActionButton(
-                onClick = { navController.navigate(Screen.QRScan.route) },
+                onClick = { navController.navigate(QRScan) },
                 containerColor = primary,
                 contentColor = white,
                 modifier = Modifier.size(64.dp)

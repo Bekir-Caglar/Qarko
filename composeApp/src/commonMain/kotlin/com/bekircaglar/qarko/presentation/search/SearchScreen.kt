@@ -31,6 +31,7 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bekircaglar.qarko.navigation.AppBottomBar
+import com.bekircaglar.qarko.navigation.QRScan
 import com.bekircaglar.qarko.presentation.common.theme.primary
 import com.bekircaglar.qarko.presentation.common.theme.white
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
@@ -129,7 +130,7 @@ fun SearchScreen(navController: NavController) {
                 .padding(bottom = 24.dp)
         ) {
             FloatingActionButton(
-                onClick = { navController.navigate("qr_scan") },
+                onClick = { navController.navigate(QRScan) },
                 containerColor = primary,
                 contentColor = white,
                 modifier = Modifier.size(64.dp)

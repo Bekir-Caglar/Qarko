@@ -74,8 +74,8 @@ fun AppBottomBar(
                 NavigationBarItem(
                     selected = selected,
                     onClick = {
-                        if (!selected) {
-                            navController.navigate(item.route) {
+                        if (!selected && item.destination != null) {
+                            navController.navigate(item.destination) {
                                 launchSingleTop = true
                                 restoreState = true
                             }
@@ -120,6 +120,7 @@ fun AppBottomBar(
 
 data class BottomBarItem(
     val route: String,
+    val destination: Any? = null,
     val unSelectedIconPainter: Painter?,
     val selectedIconPainter: Painter? = null,
     val label: String
@@ -129,26 +130,30 @@ data class BottomBarItem(
 fun defaultBottomBarItems(): List<BottomBarItem> {
     return listOf(
         BottomBarItem(
-            route = Screen.TenantMenu.route,
+            route = Screens.TENANT_MENU,
+            destination = TenantMenu,
             unSelectedIconPainter = painterResource(Res.drawable.ic_home),
             selectedIconPainter = painterResource(Res.drawable.ic_home_filled),
             label = "Menü"
         ),
         BottomBarItem(
-            route = Screen.Search.route,
+            route = Screens.SEARCH,
+            destination = Search,
             unSelectedIconPainter = painterResource(Res.drawable.ic_search),
             selectedIconPainter = painterResource(Res.drawable.ic_search_bold),
             label = "Ara"
         ),
-        BottomBarItem(route = "", unSelectedIconPainter = null, label = ""),
+        BottomBarItem(route = "", destination = null, unSelectedIconPainter = null, label = ""),
         BottomBarItem(
-            route = Screen.Campaign.route,
+            route = Screens.CAMPAIGN,
+            destination = Campaign,
             unSelectedIconPainter = painterResource(Res.drawable.ic_gift),
             selectedIconPainter = painterResource(Res.drawable.ic_gift_filled),
             label = "Kampanyalar"
         ),
         BottomBarItem(
-            route = Screen.Auth.route,
+            route = Screens.AUTH,
+            destination = Auth,
             unSelectedIconPainter = painterResource(Res.drawable.ic_profile),
             selectedIconPainter = painterResource(Res.drawable.ic_profile_filled),
             label = "Profil"

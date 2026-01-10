@@ -43,7 +43,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.gray
-import com.bekircaglar.qarko.navigation.Screen
+import com.bekircaglar.qarko.navigation.Login
+import com.bekircaglar.qarko.navigation.Register
 import com.bekircaglar.qarko.presentation.auth.SignUpPrompt
 import com.bekircaglar.qarko.presentation.auth.components.LoginOptionButton
 import com.bekircaglar.qarko.presentation.cart.component.GenericTabRow
@@ -270,8 +271,8 @@ fun LoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.size(32.dp))
 
             SignUpPrompt {
-                navController.navigate(Screen.Register.route) {
-                    popUpTo(Screen.Login.route) { inclusive = true }
+                navController.navigate(Register) {
+                    popUpTo<Login> { inclusive = true }
                 }
             }
 

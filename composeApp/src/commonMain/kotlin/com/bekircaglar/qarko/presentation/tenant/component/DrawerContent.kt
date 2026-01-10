@@ -156,12 +156,12 @@ fun DrawerContent(
             Spacer(modifier = Modifier.weight(1f))
 
             // Logout/Exit Section
-            Surface(
+            Card(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onLogout() },
+                    .fillMaxWidth(),
+                onClick = onLogout,
                 shape = RoundedCornerShape(16.dp),
-                color = Color(0xFFF44336).copy(alpha = 0.1f)
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF44336).copy(alpha = 0.1f) )
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),

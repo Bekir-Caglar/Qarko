@@ -19,7 +19,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
-import com.bekircaglar.qarko.navigation.Screen
+import com.bekircaglar.qarko.navigation.QRScan
+import com.bekircaglar.qarko.navigation.Welcome
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.primary
 import com.bekircaglar.qarko.presentation.common.theme.surfaceGray
@@ -131,8 +132,8 @@ fun WelcomeScreen(navController: NavController) {
             // QR Kod Butonu
             Button(
                 onClick = {
-                    navController.navigate(Screen.QRScan.route) {
-                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    navController.navigate(QRScan) {
+                        popUpTo<Welcome> { inclusive = true }
                     }
                 },
                 modifier = Modifier

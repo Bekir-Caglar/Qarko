@@ -5,6 +5,19 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import com.bekircaglar.qarko.navigation.Welcome
+import com.bekircaglar.qarko.navigation.QRScan
+import com.bekircaglar.qarko.navigation.TenantMenu
+import com.bekircaglar.qarko.navigation.FoodDetail
+import com.bekircaglar.qarko.navigation.Cart
+import com.bekircaglar.qarko.navigation.Search
+import com.bekircaglar.qarko.navigation.Campaign
+import com.bekircaglar.qarko.navigation.Profile
+import com.bekircaglar.qarko.navigation.Auth
+import com.bekircaglar.qarko.navigation.Login
+import com.bekircaglar.qarko.navigation.Register
+import com.bekircaglar.qarko.navigation.Otp
 import com.bekircaglar.qarko.presentation.auth.AuthScreen
 import com.bekircaglar.qarko.presentation.auth.login.LoginScreen
 import com.bekircaglar.qarko.presentation.auth.register.RegisterScreen
@@ -23,53 +36,60 @@ import com.bekircaglar.qarko.presentation.welcome.WelcomeScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    startDestination: String = NavRoutes.WELCOME,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
-        startDestination = startDestination,
+        startDestination = Welcome,
         modifier = modifier
     ) {
-        composable(NavRoutes.WELCOME) {
+        composable<Welcome> {
             WelcomeScreen(navController)
         }
 
-        composable(NavRoutes.QR_SCAN) {
+        composable<QRScan> {
             QRScanScreen(navController)
         }
 
-
-        composable(NavRoutes.TENANT_MENU) {
+        composable<TenantMenu> {
             TenantMenuScreen(navController)
         }
 
-        composable(NavRoutes.FOOD_DETAIL) {
-            FoodDetailScreen(navController)
+        composable<FoodDetail> { backStackEntry ->
+            val foodDetail: FoodDetail = backStackEntry.toRoute()
+            val foodItem = foodDetail.toFoodItem()
+            FoodDetailScreen(navController = navController, foodItem = foodItem)
         }
 
-        composable(NavRoutes.CART) {
+        composable<Cart> {
             CartScreen(navController)
         }
-        composable(NavRoutes.SEARCH) {
+
+        composable<Search> {
             SearchScreen(navController)
         }
-        composable(NavRoutes.CAMPAIGN) {
+
+        composable<Campaign> {
             CampaignScreen(navController)
         }
-        composable(NavRoutes.PROFILE) {
+
+        composable<Profile> {
             ProfileScreen(navController)
         }
-        composable(NavRoutes.AUTH) {
+
+        composable<Auth> {
             AuthScreen(navController)
         }
-        composable(NavRoutes.LOGIN) {
+
+        composable<Login> {
             LoginScreen(navController)
         }
-        composable(NavRoutes.REGISTER) {
+
+        composable<Register> {
             RegisterScreen(navController)
         }
-        composable(NavRoutes.OTP) {
+
+        composable<Otp> {
             // OtpScreen(navController)
         }
 

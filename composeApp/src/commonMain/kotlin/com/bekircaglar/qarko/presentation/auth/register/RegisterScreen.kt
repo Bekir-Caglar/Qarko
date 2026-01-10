@@ -43,7 +43,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.gray
-import com.bekircaglar.qarko.navigation.Screen
+import com.bekircaglar.qarko.navigation.Login
+import com.bekircaglar.qarko.navigation.Register
 import com.bekircaglar.qarko.presentation.auth.SignInPrompt
 import com.bekircaglar.qarko.presentation.auth.components.LoginOptionButton
 import com.bekircaglar.qarko.presentation.common.components.QButton
@@ -294,8 +295,8 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.size(32.dp))
 
             SignInPrompt {
-                navController.navigate(Screen.Login.route) {
-                    popUpTo(Screen.Register.route) { inclusive = true }
+                navController.navigate(Login) {
+                    popUpTo<Register> { inclusive = true }
                 }
             }
 

@@ -37,7 +37,9 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.navigation.NavController
 import com.bekircaglar.getPlatformName
 import com.bekircaglar.qarko.App
-import com.bekircaglar.qarko.navigation.Screen
+import com.bekircaglar.qarko.navigation.QRScan
+import com.bekircaglar.qarko.navigation.TenantMenu
+import com.bekircaglar.qarko.navigation.Welcome
 import com.bekircaglar.qarko.presentation.common.components.QText
 
 @OptIn(ExperimentalResourceApi::class)
@@ -58,8 +60,8 @@ fun QRScanScreen(navController: NavController) {
         if (isScanning) {
             ScannerWithPermissions(
                 onScanned = { result ->
-                    navController.navigate(Screen.TenantMenu.route) {
-                        popUpTo(Screen.QRScan.route) { inclusive = true }
+                    navController.navigate(TenantMenu) {
+                        popUpTo<QRScan> { inclusive = true }
                     }
                     isScanning = false
                     true
@@ -105,8 +107,8 @@ fun QRScanScreen(navController: NavController) {
         // Geri butonu
         IconButton(
             onClick = {
-                navController.navigate(Screen.Welcome.route) {
-                    popUpTo(Screen.QRScan.route) { inclusive = true }
+                navController.navigate(Welcome) {
+                    popUpTo<QRScan> { inclusive = true }
                 }
             },
             modifier = Modifier
@@ -127,8 +129,8 @@ fun QRScanScreen(navController: NavController) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .clickable() {
-                    navController.navigate(Screen.TenantMenu.route) {
-                        popUpTo(Screen.QRScan.route) { inclusive = true }
+                    navController.navigate(TenantMenu) {
+                        popUpTo<QRScan> { inclusive = true }
                     }
                 }
                 .padding(16.dp),

@@ -1,17 +1,116 @@
 package com.bekircaglar.qarko.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.ui.graphics.vector.ImageVector
+import com.bekircaglar.qarko.data.model.Allergen
+import com.bekircaglar.qarko.data.model.CustomizationGroup
+import com.bekircaglar.qarko.data.model.FoodItem
+import com.bekircaglar.qarko.data.model.FoodType
+import com.bekircaglar.qarko.data.model.Ingredient
+import com.bekircaglar.qarko.data.model.RemovableItem
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
+private val navJson = Json { ignoreUnknownKeys = true }
 
-object NavRoutes {
-    const val FOOD_DETAIL = "food_detail"
-    const val TENANT_MENU = "tenant_menu"
-    const val CART = "cart"
+/**
+ * Navigation route tanımlamaları - Type-safe navigation ile
+ */
+
+@Serializable
+object Welcome
+
+@Serializable
+object QRScan
+
+@Serializable
+object TenantMenu
+
+@Serializable
+data class FoodDetail(
+    val id: String,
+    val name: String,
+    val imageUrl: String,
+    val price: String,
+    val info: String,
+    val category: String = "",
+    val rating: Float = 0f,
+    val ratingCount: Int = 0,
+    val foodTypeOrdinal: Int = 0,
+    val ingredientsJson: String = "[]",
+    val customizationGroupsJson: String = "[]",
+    val removableItemsJson: String = "[]",
+    val allergensJson: String = "[]"
+) {
+    companion object {
+        fun fromFoodItem(foodItem: FoodItem): FoodDetail {
+            return FoodDetail(
+                id = foodItem.id,
+                name = foodItem.name,
+                imageUrl = foodItem.imageUrl,
+                price = foodItem.price,
+                info = foodItem.info,
+                category = foodItem.category,
+                rating = foodItem.rating,
+                ratingCount = foodItem.ratingCount,
+                foodTypeOrdinal = foodItem.foodType.ordinal,
+                ingredientsJson = navJson.encodeToString(foodItem.ingredients),
+                customizationGroupsJson = navJson.encodeToString(foodItem.customizationGroups),
+                removableItemsJson = navJson.encodeToString(foodItem.removableItems),
+                allergensJson = navJson.encodeToString(foodItem.allergens)
+            )
+        }
+    }
+
+    fun toFoodItem(): FoodItem {
+        return FoodItem(
+            id = id,
+            name = name,
+            imageUrl = imageUrl,
+            price = price,
+            info = info,
+            category = category,
+            rating = rating,
+            ratingCount = ratingCount,
+            foodType = FoodType.entries.getOrElse(foodTypeOrdinal) { FoodType.OTHER },
+            ingredients = try { navJson.decodeFromString<List<Ingredient>>(ingredientsJson) } catch (e: Exception) { emptyList() },
+            customizationGroups = try { navJson.decodeFromString<List<CustomizationGroup>>(customizationGroupsJson) } catch (e: Exception) { emptyList() },
+            removableItems = try { navJson.decodeFromString<List<RemovableItem>>(removableItemsJson) } catch (e: Exception) { emptyList() },
+            allergens = try { navJson.decodeFromString<List<Allergen>>(allergensJson) } catch (e: Exception) { emptyList() }
+        )
+    }
+}
+
+@Serializable
+object Cart
+
+@Serializable
+object Search
+
+@Serializable
+object Campaign
+
+@Serializable
+object Profile
+
+@Serializable
+object Auth
+
+@Serializable
+object Login
+
+@Serializable
+object Register
+
+@Serializable
+object Otp
+
+// Eski string route'lar için backwards compatibility
+object Screens {
     const val WELCOME = "welcome"
     const val QR_SCAN = "qr_scan"
+    const val TENANT_MENU = "tenant_menu"
+    const val FOOD_DETAIL = "food_detail"
+    const val CART = "cart"
     const val SEARCH = "search"
     const val CAMPAIGN = "campaign"
     const val PROFILE = "profile"
@@ -19,47 +118,4 @@ object NavRoutes {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val OTP = "otp"
-}
-
-sealed class Screen(
-    val route: String,
-    val icon: ImageVector? = null,
-    val title: String = "",
-    badgeCount: Int = 0
-) {
-    object FoodDetail : Screen(NavRoutes.FOOD_DETAIL)
-    object TenantMenu : Screen(NavRoutes.TENANT_MENU, Icons.Default.Person, "Menu")
-    object Cart : Screen(NavRoutes.CART, Icons.Default.ShoppingCart)
-    object Welcome : Screen(NavRoutes.WELCOME, title = "Welcome")
-    object QRScan : Screen(NavRoutes.QR_SCAN, title = "QR Scan")
-    object Search : Screen(NavRoutes.SEARCH, title = "Search")
-    object Campaign : Screen(
-        NavRoutes.CAMPAIGN,
-        title = "Campaigns",
-    )
-
-    object Profile : Screen(
-        NavRoutes.PROFILE,
-        title = "Profile"
-    )
-
-    object Auth : Screen(
-        NavRoutes.AUTH,
-        title = "Authentication"
-    )
-
-    object Login : Screen(
-        NavRoutes.LOGIN,
-        title = "Login"
-    )
-
-    object Register : Screen(
-        NavRoutes.REGISTER,
-        title = "Register"
-    )
-
-    object Otp : Screen(
-        NavRoutes.OTP,
-        title = "OTP Verification"
-    )
 }
