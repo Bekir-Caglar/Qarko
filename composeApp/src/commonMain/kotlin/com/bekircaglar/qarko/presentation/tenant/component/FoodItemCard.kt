@@ -1,177 +1,270 @@
 package com.bekircaglar.qarko.presentation.tenant.component
 
-import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.bekircaglar.qarko.data.model.FoodItem
+import com.bekircaglar.qarko.data.manager.CartManager
+import com.bekircaglar.qarko.data.manager.FavoritesManager
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.*
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.Minus
+import compose.icons.feathericons.Clock
+import compose.icons.feathericons.Heart
 import compose.icons.feathericons.Plus
-import kotlinx.datetime.Month
 
-@OptIn(ExperimentalAnimationApi::class)
+/**
+ * Compact Food Item Card - Similar to reference design
+ */
 @Composable
 fun FoodItemCard(
     item: FoodItem,
-    quantity: Int = 0,
-    onClick: () -> Unit,
-    onAddToCartClick: () -> Unit,
-    onRemoveFromCartClick: () -> Unit
+    onClick: () -> Unit
 ) {
-    Surface(
+    // Sepetteki bu ürünün miktarını CartManager'dan al
+    val cartQuantity by remember {
+        derivedStateOf {
+            CartManager.cartItems.filter { it.foodId == item.id }.sumOf { it.quantity }
+        }
+    }
+
+    // Favori durumunu FavoritesManager'dan al
+    val isFavorite by remember {
+        derivedStateOf {
+            FavoritesManager.isFavorite(item.id)
+        }
+    }
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(24.dp),
-        color = white,
-        shadowElevation = 4.dp
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = white),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .clickable { onClick() }
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Food Image
-            Surface(
-                modifier = Modifier.size(110.dp),
-                shape = RoundedCornerShape(20.dp),
-                shadowElevation = 2.dp
-            ) {
-                AsyncImage(
-                    model = item.imageUrl,
-                    contentDescription = item.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Food Details
-            Column(
+        Box(modifier = Modifier.fillMaxWidth()) {
+            // Main content row
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .height(110.dp), // Match image height
-                verticalArrangement = Arrangement.SpaceBetween
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Top section: Name and Info
-                Column(
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    QText(
-                        text = item.name,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = darkBlue,
-                        maxLines = 1
+                // Left: Image with badges
+                Box(modifier = Modifier.size(90.dp)) {
+                    AsyncImage(
+                        model = item.imageUrl,
+                        contentDescription = item.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(12.dp))
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    // Top-left badge: "YENİ" or discount badge
+                    if (item.isNew || item.discountPercent > 0) {
+                        Surface(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(4.dp),
+                            shape = RoundedCornerShape(6.dp),
+                            color = if (item.discountPercent > 0) primary else Color(0xFF4CAF50)
+                        ) {
+                            QText(
+                                text = if (item.discountPercent > 0) "-%${item.discountPercent}" else "YENİ",
+                                color = white,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
 
-                    QText(
-                        text = item.info,
-                        color = gray,
-                        fontSize = 14.sp,
-                        maxLines = 2,
-                        lineHeight = 18.sp
-                    )
+                    // Cart quantity badge (bottom-right of image)
+                    if (cartQuantity > 0) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(4.dp)
+                                .size(20.dp)
+                                .shadow(2.dp, CircleShape)
+                                .background(primary, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            QText(
+                                text = cartQuantity.toString(),
+                                color = white,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
 
-                // Bottom section: Price and Stepper
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                // Right: Content
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(90.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    QText(
-                        text = item.price,
-                        color = primary,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 19.sp
-                    )
+                    // Top section
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        // Name
+                        Spacer(modifier = Modifier.height(1.dp))
+                        QText(
+                            text = item.name,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = darkBlue,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(end = 32.dp) // Space for heart icon
+                        )
 
-                    // Stepper Control: [+] [Sayı] [-]
+                        // Info row: Rating, Time, Calories
+                        Row(
+                            modifier = Modifier.padding(top = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Rating
+                            if (item.rating > 0) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = yellow,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    QText(
+                                        text = item.rating.toString().take(3),
+                                        color = darkGray,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+
+                            QText(text = "•", color = gray, fontSize = 11.sp)
+
+                            // Prep time
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Icon(
+                                    imageVector = FeatherIcons.Clock,
+                                    contentDescription = null,
+                                    tint = gray,
+                                    modifier = Modifier.size(11.dp)
+                                )
+                                QText(
+                                    text = "${item.prepTime} dk",
+                                    color = darkGray,
+                                    fontSize = 11.sp
+                                )
+                            }
+
+                            QText(text = "•", color = gray, fontSize = 11.sp)
+
+                            // Calories
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                QText(text = "🔥", fontSize = 10.sp)
+                                QText(
+                                    text = "${item.calories} kcal",
+                                    color = darkGray,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+
+                    // Bottom: Price and Add Button
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
                     ) {
-                        // Plus Button (Small & Compact)
-                        Surface(
-                            modifier = Modifier.size(30.dp),
-                            shape = CircleShape,
+                        QText(
+                            text = item.price,
                             color = primary,
-                            shadowElevation = 4.dp
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 18.sp
+                        )
+
+                        Surface(
+                            onClick = { onClick() },
+                            shape = RoundedCornerShape(12.dp),
+                            color = primary.copy(alpha = 0.15f),
+                            modifier = Modifier.size(36.dp)
                         ) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clickable { onAddToCartClick() },
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
                                     imageVector = FeatherIcons.Plus,
                                     contentDescription = "Ekle",
-                                    tint = white,
-                                    modifier = Modifier.size(16.dp)
+                                    tint = primary,
+                                    modifier = Modifier.size(20.dp)
                                 )
-                            }
-                        }
-
-                        // Sağa doğru açılan Miktar ve Eksi butonu
-                        AnimatedVisibility(
-                            visible = quantity > 0,
-                            enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
-                            exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                // Quantity Text
-                                QText(
-                                    text = quantity.toString(),
-                                    color = darkBlue,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(horizontal = 10.dp)
-                                )
-
-                                // Minus Button (Small & Compact)
-                                Surface(
-                                    modifier = Modifier.size(30.dp),
-                                    shape = CircleShape,
-                                    color = primary,
-                                    shadowElevation = 4.dp
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clickable { onRemoveFromCartClick() },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = FeatherIcons.Minus,
-                                            contentDescription = "Azalt",
-                                            tint = white,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
                             }
                         }
                     }
+                }
+            }
+
+            // Heart icon at top-right - Toggle favorite
+            Surface(
+                onClick = {
+                    FavoritesManager.toggleFavorite(item)
+                },
+                shape = RoundedCornerShape(12.dp),
+                color = Color.Transparent,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(12.dp)
+                    .size(36.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else FeatherIcons.Heart,
+                        contentDescription = if (isFavorite) "Favorilerden çıkar" else "Favorilere ekle",
+                        tint = if (isFavorite) Color(0xFFE91E63) else gray,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
         }

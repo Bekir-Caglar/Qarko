@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bekircaglar.qarko.data.model.CartItemData
+import com.bekircaglar.qarko.data.manager.CartManager
 import com.bekircaglar.qarko.presentation.common.theme.gray
 import com.bekircaglar.qarko.presentation.common.theme.lighterGray
 import com.bekircaglar.qarko.presentation.common.theme.white
@@ -27,7 +28,7 @@ import com.bekircaglar.qarko.presentation.common.theme.white
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CardPaymentTab(
-    cartItems: MutableList<CartItemData>,
+    cartItems: List<CartItemData>,
 ) {
     Box(
         modifier = Modifier
@@ -56,7 +57,7 @@ fun CardPaymentTab(
             } else {
                 itemsIndexed(
                     items = cartItems,
-                    key = { _, item -> item.name } // Benzersiz bir anahtar kullanın
+                    key = { _, item -> item.id } // Benzersiz ID kullan
                 ) { index, item ->
                     CartItem(
                         imageUrl = item.imageUrl,
@@ -65,19 +66,13 @@ fun CardPaymentTab(
                         description = item.description,
                         quantity = item.quantity,
                         onIncreaseQuantity = {
-                            cartItems[index] =
-                                item.copy(quantity = item.quantity + 1)
+                            CartManager.updateQuantity(item.id, item.quantity + 1)
                         },
                         onDecreaseQuantity = {
-                            if (item.quantity > 1) {
-                                cartItems[index] =
-                                    item.copy(quantity = item.quantity - 1)
-                            } else {
-                                cartItems.removeAt(index)
-                            }
+                            CartManager.updateQuantity(item.id, item.quantity - 1)
                         },
                         onRemove = {
-                            cartItems.removeAt(index)
+                            CartManager.removeFromCart(item.id)
                         },
                     )
 

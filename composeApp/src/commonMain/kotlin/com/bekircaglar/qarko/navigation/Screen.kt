@@ -84,7 +84,7 @@ data class FoodDetail(
 object Cart
 
 @Serializable
-object Search
+object Orders
 
 @Serializable
 object Campaign
@@ -111,7 +111,7 @@ object Screens {
     const val TENANT_MENU = "tenant_menu"
     const val FOOD_DETAIL = "food_detail"
     const val CART = "cart"
-    const val SEARCH = "search"
+    const val ORDERS = "orders"
     const val CAMPAIGN = "campaign"
     const val PROFILE = "profile"
     const val AUTH = "auth"

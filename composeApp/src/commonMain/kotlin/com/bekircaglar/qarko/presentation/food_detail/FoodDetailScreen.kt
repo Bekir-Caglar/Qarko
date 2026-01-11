@@ -37,8 +37,9 @@ import com.bekircaglar.qarko.data.model.CustomizationType
 import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.data.model.Ingredient
 import com.bekircaglar.qarko.data.model.RemovableItem
+import com.bekircaglar.qarko.data.manager.CartManager
+import com.bekircaglar.qarko.data.manager.FavoritesManager
 import com.bekircaglar.qarko.presentation.common.components.QText
-import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.darkBlue
 import com.bekircaglar.qarko.presentation.common.theme.darkGray
 import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
@@ -65,7 +66,7 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
 
     // Dinamik seçimler için state'ler
     val selectedSingleOptions = remember { mutableStateMapOf<String, String>() }
-    val selectedMultiOptions = remember { mutableStateMapOf<String, MutableSet<String>>() }
+    val selectedMultiOptions = remember { mutableStateMapOf<String, Set<String>>() }
     val removedItems = remember { mutableStateMapOf<String, Boolean>() }
 
     val scope = rememberCoroutineScope()
@@ -82,7 +83,7 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
                     defaultOption?.let { selectedSingleOptions[group.id] = it }
                 }
                 CustomizationType.MULTI_SELECT -> {
-                    val defaultOptions = group.options.filter { it.isDefault }.map { it.id }.toMutableSet()
+                    val defaultOptions = group.options.filter { it.isDefault }.map { it.id }.toSet()
                     selectedMultiOptions[group.id] = defaultOptions
                 }
                 else -> {}
@@ -93,37 +94,47 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
         }
     }
 
-    // Ekstra fiyat hesaplama
-    val extraPrice = remember(selectedSingleOptions, selectedMultiOptions) {
-        var extra = 0
-        food.customizationGroups.forEach { group ->
-            when (group.type) {
-                CustomizationType.SINGLE_SELECT -> {
-                    val selectedId = selectedSingleOptions[group.id]
-                    val option = group.options.find { it.id == selectedId }
-                    option?.extraPrice?.let { priceStr ->
-                        val price = priceStr.replace("₺", "").replace(",", ".").toFloatOrNull() ?: 0f
-                        extra += price.toInt()
+    // Ekstra fiyat hesaplama - derivedStateOf kullanarak reaktif hale getiriyoruz
+    val extraPrice by remember {
+        derivedStateOf {
+            var extra = 0
+            food.customizationGroups.forEach { group ->
+                when (group.type) {
+                    CustomizationType.SINGLE_SELECT -> {
+                        val selectedId = selectedSingleOptions[group.id]
+                        val option = group.options.find { it.id == selectedId }
+                        option?.extraPrice?.let { priceStr ->
+                            val price = priceStr.replace("₺", "").replace(",", ".").toFloatOrNull() ?: 0f
+                            extra += price.toInt()
+                        }
                     }
-                }
-                CustomizationType.MULTI_SELECT -> {
-                    val selectedIds = selectedMultiOptions[group.id] ?: emptySet()
-                    group.options.filter { it.id in selectedIds }.forEach { option ->
-                        val price = option.extraPrice.replace("₺", "").replace(",", ".").toFloatOrNull() ?: 0f
-                        extra += price.toInt()
+                    CustomizationType.MULTI_SELECT -> {
+                        val selectedIds = selectedMultiOptions[group.id] ?: emptySet()
+                        group.options.filter { it.id in selectedIds }.forEach { option ->
+                            val price = option.extraPrice.replace("₺", "").replace(",", ".").toFloatOrNull() ?: 0f
+                            extra += price.toInt()
+                        }
                     }
+                    else -> {}
                 }
-                else -> {}
             }
+            extra
         }
-        extra
     }
 
     val basePrice = food.price.replace("₺", "").replace(",", ".").toFloatOrNull() ?: 0f
-    val totalPrice = (basePrice + extraPrice) * quantity
+    val totalPrice by remember {
+        derivedStateOf {
+            (basePrice + extraPrice) * quantity
+        }
+    }
 
-    // Favori state
-    var isFavorited by remember { mutableStateOf(false) }
+    // Favori state - FavoritesManager'dan al
+    val isFavorited by remember {
+        derivedStateOf {
+            FavoritesManager.isFavorite(food.id)
+        }
+    }
     val favTransition = remember { Animatable(1f) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -212,7 +223,7 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
                                     targetValue = 1f,
                                     animationSpec = tween(120)
                                 )
-                                isFavorited = !isFavorited
+                                FavoritesManager.toggleFavorite(food)
                             }
                         },
                         modifier = Modifier
@@ -238,9 +249,8 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
-                            .padding(16.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(primary.copy(alpha = 0.9f))
+                            .clip(RoundedCornerShape(topStart = 12.dp))
+                            .background(primary)
                             .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -358,12 +368,14 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
                                     selectedSingleOptions[group.id] = optionId
                                 },
                                 onMultiSelect = { optionId, isSelected ->
-                                    val currentSet = selectedMultiOptions.getOrPut(group.id) { mutableSetOf() }
+                                    // Yeni bir set oluşturarak state'i güncelle (recomposition için)
+                                    val currentSet = selectedMultiOptions[group.id]?.toMutableSet() ?: mutableSetOf()
                                     if (isSelected) {
                                         currentSet.add(optionId)
                                     } else {
                                         currentSet.remove(optionId)
                                     }
+                                    // Yeni set atayarak state değişikliğini tetikle
                                     selectedMultiOptions[group.id] = currentSet
                                 }
                             )
@@ -510,11 +522,23 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
                 Button(
                     onClick = {
                         pressed = true
-                        // short feedback
                         scope.launch {
                             pressed = true
                             kotlinx.coroutines.delay(140)
                             pressed = false
+
+                            // Add to cart using CartManager
+                            CartManager.addToCart(
+                                foodItem = food,
+                                quantity = quantity,
+                                selectedSingleOptions = selectedSingleOptions.toMap(),
+                                selectedMultiOptions = selectedMultiOptions.mapValues { it.value.toSet() },
+                                removedItems = removedItems.filter { it.value }.keys,
+                                totalPrice = totalPrice.toDouble()
+                            )
+
+                            // Navigate back after adding to cart
+                            navController.popBackStack()
                         }
                     },
                     modifier = Modifier
@@ -543,7 +567,7 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
 private fun CustomizationGroupSection(
     group: CustomizationGroup,
     selectedSingleOptions: Map<String, String>,
-    selectedMultiOptions: Map<String, MutableSet<String>>,
+    selectedMultiOptions: Map<String, Set<String>>,
     onSingleSelect: (String) -> Unit,
     onMultiSelect: (String, Boolean) -> Unit
 ) {

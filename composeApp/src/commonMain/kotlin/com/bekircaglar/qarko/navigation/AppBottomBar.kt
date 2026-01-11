@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bekircaglar.getPlatformName
@@ -31,6 +32,8 @@ import com.bekircaglar.qarko.presentation.common.theme.lightBlue
 import com.bekircaglar.qarko.presentation.common.theme.lightGray
 import com.bekircaglar.qarko.presentation.common.theme.primary
 import com.bekircaglar.qarko.presentation.common.theme.white
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Clipboard
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.ic_gift
@@ -39,8 +42,6 @@ import qarko.composeapp.generated.resources.ic_home
 import qarko.composeapp.generated.resources.ic_home_filled
 import qarko.composeapp.generated.resources.ic_profile
 import qarko.composeapp.generated.resources.ic_profile_filled
-import qarko.composeapp.generated.resources.ic_search
-import qarko.composeapp.generated.resources.ic_search_bold
 
 @Composable
 fun AppBottomBar(
@@ -137,11 +138,11 @@ fun defaultBottomBarItems(): List<BottomBarItem> {
             label = "Menü"
         ),
         BottomBarItem(
-            route = Screens.SEARCH,
-            destination = Search,
-            unSelectedIconPainter = painterResource(Res.drawable.ic_search),
-            selectedIconPainter = painterResource(Res.drawable.ic_search_bold),
-            label = "Ara"
+            route = Screens.ORDERS,
+            destination = Orders,
+            unSelectedIconPainter = rememberVectorPainter(FeatherIcons.Clipboard),
+            selectedIconPainter = rememberVectorPainter(FeatherIcons.Clipboard),
+            label = "Siparişler"
         ),
         BottomBarItem(route = "", destination = null, unSelectedIconPainter = null, label = ""),
         BottomBarItem(

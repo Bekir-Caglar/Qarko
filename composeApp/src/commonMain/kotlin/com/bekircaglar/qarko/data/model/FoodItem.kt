@@ -19,7 +19,11 @@ data class FoodItem(
     val allergens: List<Allergen> = emptyList(),
     val customizationGroups: List<CustomizationGroup> = emptyList(),
     val removableItems: List<RemovableItem> = emptyList(),
-    val foodType: FoodType = FoodType.OTHER
+    val foodType: FoodType = FoodType.OTHER,
+    val isNew: Boolean = false,
+    val discountPercent: Int = 0,
+    val prepTime: String = "15-20",
+    val calories: Int = 0
 )
 
 /**

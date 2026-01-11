@@ -1,5 +1,7 @@
 package com.bekircaglar.qarko.presentation.auth.login
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
@@ -10,9 +12,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -22,6 +26,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -32,9 +39,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -43,11 +53,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.gray
+import com.bekircaglar.qarko.presentation.common.theme.lightGray
+import com.bekircaglar.qarko.presentation.common.theme.primary
 import com.bekircaglar.qarko.navigation.Login
 import com.bekircaglar.qarko.navigation.Register
 import com.bekircaglar.qarko.presentation.auth.SignUpPrompt
 import com.bekircaglar.qarko.presentation.auth.components.LoginOptionButton
-import com.bekircaglar.qarko.presentation.cart.component.GenericTabRow
 import com.bekircaglar.qarko.presentation.common.components.QButton
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.components.QTextField
@@ -75,6 +86,8 @@ fun LoginScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    val tabs = listOf("E-posta", "Telefon Numarası")
 
     Scaffold(
         topBar = {
@@ -129,14 +142,50 @@ fun LoginScreen(navController: NavController) {
                 textStyle = QarkoTypography.headlineLarge
             )
 
-            GenericTabRow(
-                tabTitles = listOf("E-posta", "Telefon Numarası"),
+            // Native TabRow for E-posta / Telefon
+            TabRow(
                 selectedTabIndex = selectedTabIndex,
-                onTabSelected = { index ->
-                    selectedTabIndex = index
+                containerColor = Color.Transparent,
+                contentColor = primary,
+                modifier = Modifier
+                    .padding(top = 24.dp, bottom = 16.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(lightGray.copy(alpha = 0.3f)),
+                indicator = { tabPositions ->
+                    Box(
+                        modifier = Modifier
+                            .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                            .height(3.dp)
+                            .padding(horizontal = 32.dp)
+                            .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+                            .background(primary)
+                    )
                 },
-                modifier = Modifier.padding(top = 24.dp, bottom = 16.dp)
-            )
+                divider = {}
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    val isSelected = selectedTabIndex == index
+                    val textColor by animateColorAsState(
+                        targetValue = if (isSelected) primary else gray,
+                        animationSpec = tween(300),
+                        label = "tabTextColor"
+                    )
+
+                    Tab(
+                        selected = isSelected,
+                        onClick = { selectedTabIndex = index },
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
+                        QText(
+                            text = title,
+                            color = textColor,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(vertical = 12.dp)
+                        )
+                    }
+                }
+            }
 
             when (selectedTabIndex) {
                 0 -> { // E-posta

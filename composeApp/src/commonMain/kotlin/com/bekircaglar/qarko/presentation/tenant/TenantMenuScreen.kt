@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +28,7 @@ import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.data.model.FoodType
 import com.bekircaglar.qarko.data.model.Ingredient
 import com.bekircaglar.qarko.data.model.RemovableItem
+import com.bekircaglar.qarko.data.manager.CartManager
 import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Cart
 import com.bekircaglar.qarko.navigation.FoodDetail
@@ -57,9 +56,8 @@ fun TenantMenuScreen(navController: NavController) {
         "Atıştırmalıklar", "Yan Ürünler"
     )
 
-    // Sepet durumunu takip etmek için state
-    val cartItems = remember { mutableStateMapOf<String, Int>() }
-    val totalCartCount = cartItems.values.sum()
+    // Sepet durumunu CartManager'dan al
+    val totalCartCount by remember { derivedStateOf { CartManager.totalItemCount } }
 
     val categorizedFoods = remember {
         mapOf(
@@ -74,6 +72,9 @@ fun TenantMenuScreen(navController: NavController) {
                     rating = 4.8f,
                     ratingCount = 234,
                     foodType = FoodType.PIZZA,
+                    isNew = true,
+                    prepTime = "25-30",
+                    calories = 780,
                     ingredients = listOf(
                         Ingredient("1", "Mozzarella", "🧀", true),
                         Ingredient("2", "Domates Sosu", "🍅", true),
@@ -127,6 +128,9 @@ fun TenantMenuScreen(navController: NavController) {
                     rating = 4.6f,
                     ratingCount = 189,
                     foodType = FoodType.BURGER,
+                    discountPercent = 20,
+                    prepTime = "15-20",
+                    calories = 620,
                     ingredients = listOf(
                         Ingredient("1", "Dana Köfte", "🥩", true),
                         Ingredient("2", "Cheddar", "🧀", true),
@@ -179,6 +183,8 @@ fun TenantMenuScreen(navController: NavController) {
                     rating = 4.5f,
                     ratingCount = 98,
                     foodType = FoodType.STARTER,
+                    prepTime = "10-15",
+                    calories = 320,
                     ingredients = listOf(
                         Ingredient("1", "Ekmek", "🍞", true),
                         Ingredient("2", "Domates", "🍅", true),
@@ -1569,21 +1575,8 @@ fun TenantMenuScreen(navController: NavController) {
                             is FoodItem -> {
                                 FoodItemCard(
                                     item = item,
-                                    quantity = cartItems[item.name] ?: 0,
                                     onClick = {
                                         navController.navigate(FoodDetail.fromFoodItem(item))
-                                    },
-                                    onAddToCartClick = {
-                                        val current = cartItems[item.name] ?: 0
-                                        cartItems[item.name] = current + 1
-                                    },
-                                    onRemoveFromCartClick = {
-                                        val current = cartItems[item.name] ?: 0
-                                        if (current > 1) {
-                                            cartItems[item.name] = current - 1
-                                        } else {
-                                            cartItems.remove(item.name)
-                                        }
                                     }
                                 )
                             }

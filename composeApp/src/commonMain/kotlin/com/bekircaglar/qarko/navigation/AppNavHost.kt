@@ -6,26 +6,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.bekircaglar.qarko.navigation.Welcome
-import com.bekircaglar.qarko.navigation.QRScan
-import com.bekircaglar.qarko.navigation.TenantMenu
-import com.bekircaglar.qarko.navigation.FoodDetail
-import com.bekircaglar.qarko.navigation.Cart
-import com.bekircaglar.qarko.navigation.Search
-import com.bekircaglar.qarko.navigation.Campaign
-import com.bekircaglar.qarko.navigation.Profile
-import com.bekircaglar.qarko.navigation.Auth
-import com.bekircaglar.qarko.navigation.Login
-import com.bekircaglar.qarko.navigation.Register
-import com.bekircaglar.qarko.navigation.Otp
 import com.bekircaglar.qarko.presentation.auth.AuthScreen
 import com.bekircaglar.qarko.presentation.auth.login.LoginScreen
 import com.bekircaglar.qarko.presentation.auth.register.RegisterScreen
 import com.bekircaglar.qarko.presentation.campaign.CampaignScreen
 import com.bekircaglar.qarko.presentation.cart.CartScreen
+import com.bekircaglar.qarko.presentation.orders.OrdersScreen
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailScreen
 import com.bekircaglar.qarko.presentation.profile.ProfileScreen
-import com.bekircaglar.qarko.presentation.search.SearchScreen
 import com.bekircaglar.qarko.presentation.tenant.TenantMenuScreen
 import com.bekircaglar.qarko.presentation.welcome.QRScanScreen
 import com.bekircaglar.qarko.presentation.welcome.WelcomeScreen
@@ -65,8 +53,8 @@ fun AppNavHost(
             CartScreen(navController)
         }
 
-        composable<Search> {
-            SearchScreen(navController)
+        composable<Orders> {
+            OrdersScreen(navController)
         }
 
         composable<Campaign> {
