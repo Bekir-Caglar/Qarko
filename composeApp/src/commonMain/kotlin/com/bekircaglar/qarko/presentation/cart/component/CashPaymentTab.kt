@@ -30,7 +30,7 @@ fun CashPaymentTab(cartItems: List<CartItemData>) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 160.dp)
+            contentPadding = PaddingValues(bottom = 350.dp)
         ) {
             if (cartItems.isEmpty()) {
                 item {
@@ -69,12 +69,7 @@ fun CashPaymentTab(cartItems: List<CartItemData>) {
                         }
                     )
 
-                    if (index < cartItems.size - 1) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = lighterGray
-                        )
-                    }
+                        // Divider removed for card layout
                 }
             }
         }

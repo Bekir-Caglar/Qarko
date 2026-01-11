@@ -84,10 +84,16 @@ data class FoodDetail(
 object Cart
 
 @Serializable
+object Checkout
+
+@Serializable
 object Orders
 
 @Serializable
 object Campaign
+
+@Serializable
+object CampaignSelect
 
 @Serializable
 object Profile
@@ -113,6 +119,7 @@ object Screens {
     const val CART = "cart"
     const val ORDERS = "orders"
     const val CAMPAIGN = "campaign"
+    const val CAMPAIGN_SELECT = "campaign_select"
     const val PROFILE = "profile"
     const val AUTH = "auth"
     const val LOGIN = "login"

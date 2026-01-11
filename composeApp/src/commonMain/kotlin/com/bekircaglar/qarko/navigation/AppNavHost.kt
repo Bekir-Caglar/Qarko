@@ -11,6 +11,8 @@ import com.bekircaglar.qarko.presentation.auth.login.LoginScreen
 import com.bekircaglar.qarko.presentation.auth.register.RegisterScreen
 import com.bekircaglar.qarko.presentation.campaign.CampaignScreen
 import com.bekircaglar.qarko.presentation.cart.CartScreen
+import com.bekircaglar.qarko.presentation.checkout.CampaignSelectScreen
+import com.bekircaglar.qarko.presentation.checkout.CheckoutScreen
 import com.bekircaglar.qarko.presentation.orders.OrdersScreen
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailScreen
 import com.bekircaglar.qarko.presentation.profile.ProfileScreen
@@ -53,12 +55,20 @@ fun AppNavHost(
             CartScreen(navController)
         }
 
+        composable<Checkout> {
+            CheckoutScreen(navController)
+        }
+
         composable<Orders> {
             OrdersScreen(navController)
         }
 
         composable<Campaign> {
             CampaignScreen(navController)
+        }
+
+        composable<CampaignSelect> {
+            CampaignSelectScreen(navController)
         }
 
         composable<Profile> {

@@ -1,31 +1,32 @@
 package com.bekircaglar.qarko.presentation.cart
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -33,52 +34,44 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.bekircaglar.qarko.navigation.FoodDetail
+import com.bekircaglar.qarko.navigation.Checkout
 import com.bekircaglar.qarko.presentation.common.theme.black
-import com.bekircaglar.qarko.presentation.common.theme.darkBlue
 import com.bekircaglar.qarko.presentation.common.theme.gray
 import com.bekircaglar.qarko.presentation.common.theme.lightGray
 import com.bekircaglar.qarko.data.manager.CartManager
-import com.bekircaglar.qarko.presentation.cart.component.CardDetails
+import com.bekircaglar.qarko.data.manager.FavoritesManager
+import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.presentation.cart.component.CardPaymentTab
-import com.bekircaglar.qarko.presentation.cart.component.CashPaymentTab
-import com.bekircaglar.qarko.presentation.cart.component.OrderButtonComponent
-import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodRow
 import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodSheet
 import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.presentation.common.components.QText
-import com.bekircaglar.qarko.util.toPriceString
 import com.bekircaglar.qarko.presentation.common.theme.primary
+import com.bekircaglar.qarko.presentation.common.theme.surfaceGray
 import com.bekircaglar.qarko.presentation.common.theme.white
+import coil3.compose.AsyncImage
+import com.bekircaglar.qarko.presentation.common.theme.lighterGray
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.CreditCard
-import compose.icons.feathericons.DollarSign
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
-import qarko.composeapp.generated.resources.Res
-import qarko.composeapp.generated.resources.ic_trash
+import compose.icons.feathericons.ShoppingCart
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(navController: NavController) {
     val cartItems = CartManager.cartItems
-    val scope = rememberCoroutineScope()
 
-    var savedCard by remember { mutableStateOf<CardDetails?>(null) }
     var showPaymentSheet by remember { mutableStateOf(false) }
     val modalBottomSheetState = rememberModalBottomSheetState()
-
-    // Pager state for swipeable tabs
-    val pagerState = rememberPagerState(initialPage = 0) { 2 }
 
     // Calculate total reactively
     val total by remember {
@@ -87,13 +80,8 @@ fun CartScreen(navController: NavController) {
         }
     }
 
-    val tabs = listOf(
-        TabItem("Kart ile öde", FeatherIcons.CreditCard),
-        TabItem("Kasada öde", FeatherIcons.DollarSign)
-    )
-
     Scaffold(
-        containerColor = white,
+        containerColor = surfaceGray,
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -107,20 +95,6 @@ fun CartScreen(navController: NavController) {
                         fontWeight = FontWeight.Bold
                     )
                 },
-                actions = {
-                    if (cartItems.isNotEmpty()) {
-                        IconButton(
-                            onClick = { CartManager.clearCart() }
-                        ) {
-                            Icon(
-                                painter = painterResource(Res.drawable.ic_trash),
-                                contentDescription = "Sepeti Temizle",
-                                tint = black,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                },
                 navigationIcon = {
                     BackButton { navController.popBackStack() }
                 }
@@ -133,143 +107,179 @@ fun CartScreen(navController: NavController) {
                 .padding(paddingValues)
         ) {
             if (cartItems.isEmpty()) {
+                val favoriteItems = FavoritesManager.getCurrentTenantFavorites()
+
                 // Empty cart state
                 Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    QText(text = "🛒", fontSize = 64.sp)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    QText(
-                        text = "Sepetiniz boş",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = darkBlue
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    QText(
-                        text = "Lezzetli ürünlerimizi keşfedin!",
-                        fontSize = 14.sp,
-                        color = gray
-                    )
-                }
-            } else {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    // Native TabRow
-                    TabRow(
-                        selectedTabIndex = pagerState.currentPage,
-                        containerColor = white,
-                        contentColor = primary,
-                        indicator = { tabPositions ->
-                            Box(
-                                modifier = Modifier
-                                    .tabIndicatorOffset(tabPositions[pagerState.currentPage])
-                                    .height(3.dp)
-                                    .padding(horizontal = 48.dp)
-                                    .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
-                                    .background(primary)
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = FeatherIcons.ShoppingCart,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .padding(bottom = 16.dp),
+                            tint = lightGray
+                        )
+
+                        Text(
+                            text = "Sepetiniz Boş",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = black
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Henüz sepetinize bir şey eklemediniz.",
+                            fontSize = 16.sp,
+                            color = gray,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Button(
+                            onClick = { navController.popBackStack() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = primary
                             )
-                        },
-                        divider = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .background(lightGray.copy(alpha = 0.5f))
+                        ) {
+                            Text(
+                                text = "Menüyü Görüntüle",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
-                    ) {
-                        tabs.forEachIndexed { index, tab ->
-                            val isSelected = pagerState.currentPage == index
-                            val textColor by animateColorAsState(
-                                targetValue = if (isSelected) primary else gray,
-                                animationSpec = tween(300),
-                                label = "tabTextColor"
-                            )
 
-                            Tab(
-                                selected = isSelected,
-                                onClick = {
-                                    scope.launch {
-                                        pagerState.animateScrollToPage(index)
-                                    }
-                                },
-                                modifier = Modifier.padding(vertical = 4.dp)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        TextButton(
+                            onClick = { /* TODO: Navigate to previous orders */ }
+                        ) {
+                            Text(
+                                text = "Önceki Siparişlerim",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = primary
+                            )
+                        }
+                    }
+
+                    if (favoriteItems.isNotEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp)
+                        ) {
+                            Text(
+                                text = "Favorileriniz",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = black
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = tab.icon,
-                                        contentDescription = null,
-                                        tint = textColor,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.size(8.dp))
-                                    QText(
-                                        text = tab.title,
-                                        color = textColor,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        fontSize = 14.sp
+                                items(favoriteItems) { item ->
+                                    FavoriteItemCard(
+                                        item = item,
+                                        onClick = { navController.navigate(FoodDetail.fromFoodItem(item)) }
                                     )
                                 }
                             }
                         }
                     }
-
-                    // HorizontalPager for swipeable content
-                    HorizontalPager(
-                        state = pagerState,
+                }
+            } else {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Card Payment Content (tab kaldırıldı)
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                    ) { page ->
-                        when (page) {
-                            0 -> CardPaymentTab(cartItems = cartItems)
-                            1 -> CashPaymentTab(cartItems = cartItems)
-                        }
+                    ) {
+                        CardPaymentTab(cartItems = cartItems)
                     }
 
                     // Bottom payment section
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(8.dp)
                             .background(white)
                             .padding(16.dp)
                     ) {
-                        OrderButtonComponent(
-                            buttonText = if (pagerState.currentPage == 1) "Sipariş Ver" else "Ödemeye Geç",
-                            onButtonClick = { },
-                            topContent = {
-                                if (pagerState.currentPage == 0) {
-                                    PaymentMethodRow(total)
-                                    Spacer(modifier = Modifier.size(16.dp))
-                                } else {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        QText(
-                                            text = "Toplam",
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                        Text(
-                                            text = total.toPriceString(),
-                                            fontSize = 18.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = darkBlue
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                }
+                        val deliveryFee = 15.0
+                        val subTotal = total
+                        val discount = 20.0
+                        val finalTotal = subTotal + deliveryFee - discount
+                        val originalTotal = subTotal + deliveryFee
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(primary),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Button part
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxSize()
+                                    .clickable { navController.navigate(Checkout) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Ödemeye Geç",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = white
+                                )
                             }
-                        )
+
+                            // Price part - continuation of button
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .background(lighterGray)
+                                    .padding(horizontal = 24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "₺${originalTotal.toInt()}",
+                                    fontSize = 14.sp,
+                                    color = gray,
+                                    fontWeight = FontWeight.Medium,
+                                    style = androidx.compose.ui.text.TextStyle(
+                                        textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
+                                    )
+                                )
+                                Text(
+                                    text = "₺${finalTotal.toInt()}",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = black
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -284,7 +294,7 @@ fun CartScreen(navController: NavController) {
             PaymentMethodSheet(
                 onDismiss = { showPaymentSheet = false },
                 onSave = { cardDetails ->
-                    savedCard = cardDetails
+                    // Handle card save
                     showPaymentSheet = false
                 }
             )
@@ -296,3 +306,50 @@ private data class TabItem(
     val title: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector
 )
+
+@Composable
+fun FavoriteItemCard(
+    item: FoodItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .width(110.dp)
+            .background(white, RoundedCornerShape(12.dp))
+            .border(1.dp, lightGray.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AsyncImage(
+            model = item.imageUrl,
+            contentDescription = item.name,
+            modifier = Modifier
+                .size(70.dp)
+                .clip(RoundedCornerShape(8.dp)),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = item.name,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = black,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "₺${item.price}",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = primary
+        )
+    }
+}
