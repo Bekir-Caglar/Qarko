@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bekircaglar.qarko.data.manager.TenantSession
 import com.bekircaglar.qarko.presentation.common.components.QSwitch
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.*
@@ -34,6 +35,9 @@ fun DrawerContent(
     val themeController = LocalThemeController.current
     val isDarkTheme by remember { mutableStateOf(themeController.isDarkTheme) }
     var isLanguageMenuExpanded by remember { mutableStateOf(false) }
+
+    // Firebase'den gelen veya güncellenen aktif tenant bilgisi
+    val currentTenant = TenantSession.currentTenant
 
     ModalDrawerSheet(
         modifier = Modifier.fillMaxWidth(0.75f),
@@ -58,20 +62,20 @@ fun DrawerContent(
                     Image(
                         painter = painterResource(Res.drawable.ifsokak_logo),
                         contentDescription = "Logo",
-                        colorFilter = ColorFilter.tint(Color(0xFFf4244a)),
+                        colorFilter = ColorFilter.tint(primary),
                         modifier = Modifier.padding(8.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     QText(
-                        text = "IF Sokak",
+                        text = currentTenant?.name ?: "Yükleniyor...",
                         fontSize = 20.sp,
                         fontWeight = Bold,
                         color = black
                     )
                     QText(
-                        text = "Lezzet Dururağı",
+                        text = currentTenant?.description ?: "İşletme Bilgisi",
                         fontSize = 12.sp,
                         color = gray
                     )
@@ -80,18 +84,19 @@ fun DrawerContent(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Business Info Section - FIREBASE DATA INTEGRATED HERE
             InfoItem(
                 icon = FeatherIcons.MapPin,
-                text = "Çayyolu, Ankara Caddesi No:123, Çankaya/Ankara"
+                text = currentTenant?.address?.street ?: "Adres bilgisi yükleniyor..."
             )
             InfoItem(
                 icon = FeatherIcons.Clock,
-                text = "09:00 - 23:00 (Açık)",
-                textColor = Color(0xFF4CAF50)
+                text = if (currentTenant?.isOpen == true) "09:00 - 23:00 (Açık)" else "Kapalı",
+                textColor = if (currentTenant?.isOpen == true) Color(0xFF4CAF50) else Color.Red
             )
             InfoItem(
                 icon = FeatherIcons.Coffee,
-                text = "Pizza, Burger, İçecek"
+                text = currentTenant?.description ?: "Kategori Bilgisi"
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -102,7 +107,7 @@ fun DrawerContent(
             QText(text = "Ayarlar", fontSize = 14.sp, fontWeight = Bold, color = gray)
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Language Preference with Dropdown
+            // Language Preference
             Box {
                 PreferenceItem(
                     icon = FeatherIcons.Globe,
@@ -115,7 +120,7 @@ fun DrawerContent(
                     },
                     onClick = { isLanguageMenuExpanded = true }
                 )
-
+                
                 DropdownMenu(
                     expanded = isLanguageMenuExpanded,
                     onDismissRequest = { isLanguageMenuExpanded = false },
@@ -123,14 +128,14 @@ fun DrawerContent(
                 ) {
                     DropdownMenuItem(
                         text = { QText("Türkçe 🇹🇷") },
-                        onClick = {
+                        onClick = { 
                             isLanguageMenuExpanded = false
                             onChangeLanguage()
                         }
                     )
                     DropdownMenuItem(
                         text = { QText("English 🇬🇧") },
-                        onClick = {
+                        onClick = { 
                             isLanguageMenuExpanded = false
                             onChangeLanguage()
                         }
@@ -144,11 +149,11 @@ fun DrawerContent(
                 label = "Koyu Tema",
                 trailing = {
                     QSwitch(
-                        scale = 1.2f, // Reduced size
+                        scale = 1f,
                         isChecked = isDarkTheme,
                         onCheckedChange = { themeController.toggleTheme() },
                         checkedTrackColor = primary,
-                        uncheckedTrackColor = gray
+                        uncheckedTrackColor = lightGray
                     )
                 }
             )
@@ -156,12 +161,12 @@ fun DrawerContent(
             Spacer(modifier = Modifier.weight(1f))
 
             // Logout/Exit Section
-            Card(
+            Surface(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                onClick = onLogout,
+                    .fillMaxWidth()
+                    .clickable { onLogout() },
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF44336).copy(alpha = 0.1f) )
+                color = Color(0xFFF44336).copy(alpha = 0.1f)
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -177,16 +182,12 @@ fun DrawerContent(
 }
 
 @Composable
-fun InfoItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String,
-    textColor: Color = black
-) {
+fun InfoItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, textColor: Color = black) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top
     ) {
         Icon(icon, null, Modifier.size(18.dp), primary)
         Spacer(modifier = Modifier.width(12.dp))
