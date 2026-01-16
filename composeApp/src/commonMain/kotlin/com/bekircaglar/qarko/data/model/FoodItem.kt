@@ -8,10 +8,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class FoodItem(
     val id: String = "",
-    val name: String,
-    val imageUrl: String,
-    val price: String,
-    val info: String,
+    val name: String = "",
+    val imageUrl: String = "",
+    val price: String = "₺0", // İndirimli veya normal fiyat (gösterilecek ana fiyat)
+    val originalPrice: String? = null, // İndirim varsa orijinal fiyat (üstü çizili gösterilecek)
+    val info: String = "",
     val category: String = "",
     val rating: Float = 0f,
     val ratingCount: Int = 0,
@@ -21,8 +22,9 @@ data class FoodItem(
     val removableItems: List<RemovableItem> = emptyList(),
     val foodType: FoodType = FoodType.OTHER,
     val isNew: Boolean = false,
+    val isFeatured: Boolean = false,
     val discountPercent: Int = 0,
-    val prepTime: String = "15-20",
+    val prepTime: String? = null,
     val calories: Int = 0
 )
 
@@ -61,7 +63,7 @@ enum class FoodType {
 @Serializable
 data class Ingredient(
     val id: String = "",
-    val name: String,
+    val name: String = "",
     val iconName: String = "", // İkon adı (örn: "tomato", "cheese", "pepper")
     val isMain: Boolean = false // Ana malzeme mi?
 )
@@ -72,7 +74,7 @@ data class Ingredient(
 @Serializable
 data class CustomizationGroup(
     val id: String = "",
-    val name: String, // Örn: "Boy", "Hamur Tipi", "Et Pişirme"
+    val name: String = "", // Örn: "Boy", "Hamur Tipi", "Et Pişirme"
     val type: CustomizationType = CustomizationType.SINGLE_SELECT,
     val isRequired: Boolean = false,
     val options: List<CustomizationOption> = emptyList()
@@ -94,7 +96,7 @@ enum class CustomizationType {
 @Serializable
 data class CustomizationOption(
     val id: String = "",
-    val name: String,
+    val name: String = "",
     val extraPrice: String = "₺0", // Ekstra fiyat
     val isDefault: Boolean = false
 )
@@ -105,7 +107,8 @@ data class CustomizationOption(
 @Serializable
 data class RemovableItem(
     val id: String = "",
-    val name: String,
+    val name: String = "",
+    val emoji: String = "",
     val isRemoved: Boolean = false
 )
 
@@ -123,5 +126,3 @@ enum class Allergen(val displayName: String, val iconName: String) {
     SHELLFISH("Kabuklu Deniz Ürünleri", "shellfish"),
     SESAME("Susam", "sesame")
 }
-
-

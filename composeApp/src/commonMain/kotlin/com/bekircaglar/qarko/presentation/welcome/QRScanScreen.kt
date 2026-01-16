@@ -159,10 +159,6 @@ fun QRScanScreen(navController: NavController) {
         Card(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .clickable() {
-                    // Test için örnek QR URL'i ile devam et
-                    processQRCode("https://qarko.app/menu/beko-yeri?tableId=ic4Db9JrLcbhkHXrAJYM")
-                }
                 .padding(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White.copy(alpha = 0.9f)
@@ -189,10 +185,15 @@ fun QRScanScreen(navController: NavController) {
                         color = Color.Red
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    QText(
-                        text = "Tekrar taramak için dokunun",
-                        textAlign = TextAlign.Center
-                    )
+                    Button(
+                        onClick = { 
+                            isScanning = true 
+                            errorMessage = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                    ) {
+                        QText(text = "Tekrar Dene", color = Color.White)
+                    }
                 } else {
                     QText(
                         text = "QR kodu çerçeve içine getirin",

@@ -1,5 +1,6 @@
 package com.bekircaglar.qarko.data.model
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 /**
@@ -9,19 +10,17 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Campaign(
     val id: String = "",
-    val tenantId: String = "",
+    val name: String = "",
     val title: String = "",
     val description: String = "",
-    val emoji: String = "🎁",
-    val imageUrl: String = "",
     val type: CampaignType = CampaignType.PERCENTAGE_DISCOUNT,
-    val discountValue: Double = 0.0, // Yüzde veya sabit tutar
-    val validity: CampaignValidity = CampaignValidity(),
+    val discountValue: Double = 0.0,
     val conditions: CampaignConditions = CampaignConditions(),
+    val validity: CampaignValidity = CampaignValidity(),
     val usage: CampaignUsage = CampaignUsage(),
-    val code: String? = null, // Promosyon kodu (opsiyonel)
-    val isActive: Boolean = true,
-    val sortOrder: Int = 0
+    val imageUrl: String? = null,
+    val createdAt: Instant? = null,
+    val updatedAt: Instant? = null
 )
 
 /**
@@ -32,41 +31,41 @@ enum class CampaignType {
     PERCENTAGE_DISCOUNT,    // Yüzde indirim (örn: %20)
     FIXED_DISCOUNT,         // Sabit tutar indirim (örn: 50₺)
     BUY_X_GET_Y,           // X al Y öde
-    FREE_ITEM,             // Bedava ürün
-    FREE_DELIVERY,         // Ücretsiz teslimat
-    FIRST_ORDER            // İlk sipariş indirimi
+    FREE_ITEM              // Bedava ürün
 }
+
+@Serializable
+data class CampaignConditions(
+    val minOrderAmount: Double? = null, // Minimum sepet tutarı
+    val maxDiscountAmount: Double? = null, // Maksimum indirim tutarı
+    val applicableCategories: List<String>? = null, // Geçerli kategoriler (boş = tümü)
+    val applicableItems: List<String>? = null, // Geçerli ürünler (boş = tümü)
+    val applicableOrderTypes: List<String>? = null, // 'DINE_IN' | 'TAKEAWAY' | 'DELIVERY'
+    val applicableDays: List<Int>? = null, // 0-6, Sunday = 0
+    val applicableHours: CampaignHours? = null,
+    val buyQuantity: Int? = null,
+    val getQuantity: Int? = null,
+    val freeItemId: String? = null, // Bedava verilecek ürün
+    val maxUsagePerUser: Int? = null, // Kullanıcı başına kullanım limiti
+    val maxTotalUsage: Int? = null, // Toplam kullanım limiti
+    val requiresCode: Boolean? = null, // Kod gerekli mi?
+    val code: String? = null // Promosyon kodu (opsiyonel)
+)
+
+@Serializable
+data class CampaignHours(
+    val start: String = "00:00",
+    val end: String = "23:59"
+)
 
 /**
  * Kampanya geçerlilik bilgisi
  */
 @Serializable
 data class CampaignValidity(
-    val startDate: Long = 0, // timestamp
-    val endDate: Long = 0, // timestamp
-    val isActive: Boolean = true,
-    val validDays: List<Int> = listOf(0, 1, 2, 3, 4, 5, 6), // 0 = Pazar, 6 = Cumartesi
-    val validHoursStart: String = "00:00",
-    val validHoursEnd: String = "23:59"
-)
-
-/**
- * Kampanya koşulları
- */
-@Serializable
-data class CampaignConditions(
-    val minOrderAmount: Double = 0.0, // Minimum sepet tutarı
-    val maxDiscountAmount: Double? = null, // Maksimum indirim tutarı
-    val maxUsagePerUser: Int? = null, // Kullanıcı başına kullanım limiti
-    val maxTotalUsage: Int? = null, // Toplam kullanım limiti
-    val applicableCategories: List<String> = emptyList(), // Geçerli kategoriler (boş = tümü)
-    val applicableItems: List<String> = emptyList(), // Geçerli ürünler (boş = tümü)
-    val excludedCategories: List<String> = emptyList(), // Hariç kategoriler
-    val excludedItems: List<String> = emptyList(), // Hariç ürünler
-    val requiresLogin: Boolean = true, // Giriş gerekli mi?
-    val firstOrderOnly: Boolean = false, // Sadece ilk sipariş için mi?
-    val requiredItemId: String? = null, // X al Y öde için gerekli ürün
-    val freeItemId: String? = null // Bedava verilecek ürün
+    val startDate: Instant? = null, // Başlangıç tarihi
+    val endDate: Instant? = null, // Bitiş tarihi
+    val isActive: Boolean = true
 )
 
 /**
@@ -76,7 +75,7 @@ data class CampaignConditions(
 data class CampaignUsage(
     val totalUsed: Int = 0,
     val totalDiscountGiven: Double = 0.0,
-    val lastUsedAt: Long? = null
+    val usageByDate: Map<String, Int>? = null
 )
 
 /**
@@ -90,4 +89,3 @@ data class UserCampaignUsage(
     val lastUsedAt: Long? = null,
     val totalDiscountReceived: Double = 0.0
 )
-

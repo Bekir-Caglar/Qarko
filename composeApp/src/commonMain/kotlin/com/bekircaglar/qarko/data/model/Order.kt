@@ -1,6 +1,7 @@
 package com.bekircaglar.qarko.data.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.datetime.Instant
 
 /**
  * Sipariş modeli
@@ -9,110 +10,139 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Order(
     val id: String = "",
+    val orderNumber: String? = null,
     val tenantId: String = "",
+    val userId: String? = null,
     val tableId: String? = null,
-    val tableName: String? = null,
-    val userId: String? = null, // null ise misafir sipariş
-    val userPhone: String? = null,
-    val orderNumber: String = "",
-    val type: OrderType = OrderType.DINE_IN,
-    val status: OrderStatus = OrderStatus.PENDING,
+    val table: OrderTable? = null,
+    val tableNumber: Int? = null,
+    val type: OrderType? = OrderType.DINE_IN,
     val items: List<OrderItem> = emptyList(),
-    val subtotal: Double = 0.0,
-    val discount: Double = 0.0,
-    val totalAmount: Double = 0.0,
-    val paymentStatus: PaymentStatus = PaymentStatus.PENDING,
-    val paymentMethod: PaymentMethod? = null,
-    val notes: String = "",
-    val campaignId: String? = null,
-    val campaignCode: String? = null,
-    val statusHistory: List<OrderStatusHistory> = emptyList(),
-    val createdAt: Long = 0, // timestamp
-    val updatedAt: Long = 0
+    val pricing: OrderPricing? = null,
+    val payment: OrderPayment? = null,
+    // Alternative plain fields if used directly outside of payment obj
+    val paymentMethod: String? = null, // PaymentMethod enum string or custom
+    val paymentStatus: String? = null, // PaymentStatus enum string
+    val status: OrderStatus = OrderStatus.PENDING,
+    val statusHistory: List<StatusHistoryItem> = emptyList(),
+    val timing: OrderTiming? = null,
+    val notes: String? = null, // or OrderNotes if object? TS says notes?: string OR OrderNotes interface below it?
+    // TS says: "notes?: string;" in Order interface, but also "export interface OrderNotes". Maybe it's changed.
+    // I'll stick to string as per Order interface definition "notes?: string". Wait, context has `OrderNotes` interface but Order uses `notes?: string`.
+    // Actually in the shared TS block: `notes?: string;` inside Order interface. But there is `OrderNotes` interface too.
+    // I will use String for `notes` property in Order.
+    val totalAmount: Double? = null,
+    val createdAt: Instant? = null,
+    val updatedAt: Instant? = null
 )
 
-/**
- * Sipariş kalemi
- */
+@Serializable
+data class OrderTable(
+    val id: String = "",
+    val name: String = "",
+    val section: String? = null
+)
+
+@Serializable
+enum class OrderType {
+    DINE_IN,
+    TAKEAWAY,
+    DELIVERY
+}
+
 @Serializable
 data class OrderItem(
     val id: String = "",
-    val menuItemId: String = "",
+    val menuItemId: String? = null,
     val name: String = "",
-    val imageUrl: String = "",
     val quantity: Int = 1,
-    val unitPrice: Double = 0.0,
-    val totalPrice: Double = 0.0,
+    val unitPrice: Double? = null,
+    val price: Double = 0.0,
+    val totalPrice: Double? = null,
     val customizations: List<OrderItemCustomization> = emptyList(),
-    val removedItems: List<String> = emptyList(),
-    val notes: String = ""
+    val notes: String? = null
 )
 
-/**
- * Sipariş kalemi özelleştirmesi
- */
 @Serializable
 data class OrderItemCustomization(
     val groupId: String = "",
     val groupName: String = "",
-    val optionId: String = "",
-    val optionName: String = "",
-    val extraPrice: Double = 0.0
+    val selectedOptions: List<OrderItemCustomizationOption> = emptyList()
 )
 
-/**
- * Sipariş türü
- */
 @Serializable
-enum class OrderType {
-    DINE_IN,    // Masa siparişi
-    TAKEAWAY,   // Paket servis
-    DELIVERY    // Teslimat
-}
+data class OrderItemCustomizationOption(
+    val id: String = "",
+    val name: String = "",
+    val priceModifier: Double = 0.0
+)
 
-/**
- * Sipariş durumu
- */
 @Serializable
-enum class OrderStatus {
-    PENDING,    // Beklemede
-    CONFIRMED,  // Onaylandı
-    PREPARING,  // Hazırlanıyor
-    READY,      // Hazır
-    SERVED,     // Servis edildi
-    COMPLETED,  // Tamamlandı
-    CANCELLED   // İptal edildi
-}
+data class OrderPricing(
+    val subtotal: Double = 0.0,
+    val discount: Double = 0.0,
+    val discountCode: String? = null,
+    val tip: Double = 0.0,
+    val serviceFee: Double = 0.0,
+    val total: Double = 0.0
+)
 
-/**
- * Ödeme durumu
- */
 @Serializable
-enum class PaymentStatus {
-    PENDING,    // Ödeme bekleniyor
-    PAID,       // Ödendi
-    UNPAID,     // Ödenmedi
-    REFUNDED    // İade edildi
-}
+data class OrderPayment(
+    val method: PaymentMethod,
+    val status: PaymentStatus,
+    val transactionId: String? = null,
+    val paidAt: Instant? = null
+)
 
-/**
- * Ödeme yöntemi
- */
 @Serializable
 enum class PaymentMethod {
-    CASH,           // Nakit
-    CREDIT_CARD,    // Kredi kartı (online)
-    CASH_AT_COUNTER // Kasada öde
+    CREDIT_CARD,
+    CASH,
+    ONLINE
 }
 
-/**
- * Sipariş durum geçmişi
- */
 @Serializable
-data class OrderStatusHistory(
+enum class PaymentStatus {
+    PENDING,
+    COMPLETED,
+    FAILED,
+    REFUNDED,
+    // Additional from TS union type if strictly needed, but Enum usually covers fixed set.
+    // TS: PaymentStatus | 'PAID' | 'UNPAID'.
+    // I'll assume standard ones.
+    PAID,
+    UNPAID
+}
+
+@Serializable
+enum class OrderStatus {
+    PENDING,
+    CONFIRMED,
+    PREPARING,
+    READY,
+    DELIVERED,
+    SERVED,
+    COMPLETED,
+    CANCELLED
+}
+
+@Serializable
+data class StatusHistoryItem(
     val status: OrderStatus,
-    val timestamp: Long,
-    val changedBy: String? = null, // userId veya "SYSTEM"
-    val note: String? = null
+    val timestamp: Instant,
+    val note: String? = null,
+    val changedBy: String? = null
 )
 
+@Serializable
+data class OrderTiming(
+    val placedAt: Instant,
+    val confirmedAt: Instant? = null,
+    val prepStartedAt: Instant? = null,
+    val readyAt: Instant? = null,
+    val servedAt: Instant? = null,
+    val completedAt: Instant? = null, // Renamed from deliveredAt if needed, TS has completedAt
+    val cancelledAt: Instant? = null,
+    val estimatedPrepTime: Int? = null // minutes
+)

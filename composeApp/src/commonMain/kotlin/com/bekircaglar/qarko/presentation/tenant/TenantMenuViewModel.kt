@@ -13,90 +13,46 @@ import com.bekircaglar.qarko.domain.usecase.tenant.GetTenantMenuUseCase
 import com.bekircaglar.qarko.domain.usecase.tenant.LoadTenantFromQRUseCase
 import kotlinx.coroutines.launch
 
-/**
- * TenantMenu ekranı için ViewModel
- * Tenant'ın menü, kategori ve işletme bilgilerini yönetir
- */
 class TenantMenuViewModel(
     private val loadTenantFromQRUseCase: LoadTenantFromQRUseCase,
     private val getTenantMenuUseCase: GetTenantMenuUseCase
 ) : ViewModel() {
 
-    // UI State
     var uiState by mutableStateOf(TenantMenuUiState())
         private set
 
-    // Aktif tenant bilgisi (TenantSession'dan)
     val currentTenant: Tenant?
         get() = TenantSession.currentTenant
 
-    val categories: List<MenuCategory>
-        get() = TenantSession.categories
-
-    val tableId: String?
-        get() = TenantSession.tableId
-
-    val tableName: String?
-        get() = TenantSession.currentTable?.name
-
     init {
-        // Eğer session aktifse menüyü yükle
         if (TenantSession.isSessionActive) {
             loadMenu()
         }
     }
 
-    /**
-     * QR kod URL'inden tenant'ı yükler
-     */
-    fun loadTenantFromQR(qrUrl: String) {
-        viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, error = null)
-
-            val result = loadTenantFromQRUseCase(qrUrl)
-
-            result.onSuccess { loadResult ->
-                // Menüyü de yükle
-                loadMenu()
-            }.onFailure { exception ->
-                uiState = uiState.copy(
-                    isLoading = false,
-                    error = exception.message ?: "Bir hata oluştu"
-                )
-            }
-        }
-    }
-
-    /**
-     * Direkt tenant slug ve table id ile yükleme
-     */
     fun loadTenant(tenantSlug: String, tableId: String? = null) {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
-
             val result = loadTenantFromQRUseCase.loadDirect(tenantSlug, tableId)
-
             result.onSuccess {
                 loadMenu()
             }.onFailure { exception ->
+                println("TENANT_LOAD_ERROR: ${exception.message}")
+                exception.printStackTrace()
                 uiState = uiState.copy(
                     isLoading = false,
-                    error = exception.message ?: "Bir hata oluştu"
+                    error = "İşletme yüklenemedi: ${exception.message}"
                 )
             }
         }
     }
 
-    /**
-     * Aktif tenant'ın menüsünü yükler
-     */
     fun loadMenu() {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
-
             val result = getTenantMenuUseCase()
-
             result.onSuccess { menuData ->
+                println("MENU_LOAD_SUCCESS: ${menuData.categories.size} categories, ${menuData.allItems.size} items found.")
                 uiState = uiState.copy(
                     isLoading = false,
                     categories = menuData.categories,
@@ -105,40 +61,22 @@ class TenantMenuViewModel(
                     error = null
                 )
             }.onFailure { exception ->
+                println("MENU_LOAD_ERROR: ${exception.message}")
+                exception.printStackTrace()
                 uiState = uiState.copy(
                     isLoading = false,
-                    error = exception.message ?: "Menü yüklenirken hata oluştu"
+                    error = "Menü yüklenirken hata oluştu: ${exception.message}"
                 )
             }
         }
     }
 
-    /**
-     * Belirli bir kategorinin ürünlerini getirir
-     */
-    fun getItemsForCategory(categoryId: String): List<FoodItem> {
-        return uiState.allItems.filter { it.category == categoryId }
-    }
-
-    /**
-     * Session'ı temizle (çıkış yaparken)
-     */
     fun clearSession() {
         TenantSession.clearSession()
         uiState = TenantMenuUiState()
     }
-
-    /**
-     * Hatayı temizle
-     */
-    fun clearError() {
-        uiState = uiState.copy(error = null)
-    }
 }
 
-/**
- * TenantMenu UI State
- */
 data class TenantMenuUiState(
     val isLoading: Boolean = false,
     val categories: List<MenuCategory> = emptyList(),

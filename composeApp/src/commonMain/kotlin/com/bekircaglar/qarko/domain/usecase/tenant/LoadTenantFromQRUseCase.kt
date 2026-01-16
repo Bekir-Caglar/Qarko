@@ -1,5 +1,6 @@
 package com.bekircaglar.qarko.domain.usecase.tenant
 
+import com.bekircaglar.qarko.data.manager.HistoryManager
 import com.bekircaglar.qarko.data.manager.TenantSession
 import com.bekircaglar.qarko.data.model.QRScanResult
 import com.bekircaglar.qarko.domain.repository.ITenantRepository
@@ -50,6 +51,9 @@ class LoadTenantFromQRUseCase(
             categories = categories
         )
 
+        // 6. Geçmişe ekle
+        HistoryManager.addVisitedMenu(tenant, table?.id)
+
         return Result.success(
             TenantLoadResult(
                 tenant = tenant,
@@ -95,4 +99,3 @@ class QRParseException(message: String) : Exception(message)
  * Tenant bulunamadı hatası
  */
 class TenantNotFoundException(message: String) : Exception(message)
-

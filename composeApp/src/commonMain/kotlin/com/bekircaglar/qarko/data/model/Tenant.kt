@@ -1,15 +1,16 @@
 package com.bekircaglar.qarko.data.model
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 
-/**
- * Tenant (İşletme) ana modeli
- */
 @Serializable
 data class Tenant(
     val id: String = "",
     val name: String = "",
-    val slug: String = "", // URL dostu isim (örn: beko-yeri)
+    val slug: String = "",
     val logo: String = "",
     val coverImage: String = "",
     val description: String = "",
@@ -17,38 +18,30 @@ data class Tenant(
     val address: TenantAddress = TenantAddress(),
     val workingHours: WorkingHours = WorkingHours(),
     val features: TenantFeatures = TenantFeatures(),
-    val status: TenantStatus = TenantStatus.ACTIVE,
+    val status: String = "ACTIVE",
     val isOpen: Boolean = true,
-    val theme: TenantTheme = TenantTheme()
+    val onboardingCompleted: Boolean = false,
+    // Zaman alanlarını serialization hatası almamak için şimdilik opsiyonel bırakıyoruz
+    // Firestore Timestamp tipi direkt Instant'a cast edilemeyebilir
+    val createdAt: String? = null, 
+    val updatedAt: String? = null
 )
 
-/**
- * İşletme iletişim bilgileri
- */
 @Serializable
 data class TenantContact(
     val phone: String = "",
     val email: String = "",
-    val website: String = ""
+    val website: String? = null
 )
 
-/**
- * İşletme adres bilgileri
- */
 @Serializable
 data class TenantAddress(
     val street: String = "",
-    val city: String = "",
     val district: String = "",
-    val country: String = "Türkiye",
-    val postalCode: String = "",
-    val latitude: Double = 0.0,
-    val longitude: Double = 0.0
+    val city: String = "",
+    val country: String = "Türkiye"
 )
 
-/**
- * Çalışma saatleri
- */
 @Serializable
 data class WorkingHours(
     val monday: DayHours = DayHours(),
@@ -62,50 +55,37 @@ data class WorkingHours(
 
 @Serializable
 data class DayHours(
-    val isOpen: Boolean = true,
-    val openTime: String = "09:00",
-    val closeTime: String = "22:00"
-)
+    val open: String = "09:00",
+    val close: String = "22:00",
+    val isOpen: Boolean = true
+) {
+    fun formattedHours(): String? = if (!isOpen) "Kapalı" else "$open - $close"
+    fun isOpenNow(): Boolean = isOpen // Basit versiyon
+}
 
-/**
- * İşletme özellikleri
- */
+fun WorkingHours.forToday(
+    clock: Clock = Clock.System,
+    zone: TimeZone = TimeZone.currentSystemDefault()
+): DayHours {
+    return when (clock.now().toLocalDateTime(zone).dayOfWeek) {
+        DayOfWeek.MONDAY -> monday
+        DayOfWeek.TUESDAY -> tuesday
+        DayOfWeek.WEDNESDAY -> wednesday
+        DayOfWeek.THURSDAY -> thursday
+        DayOfWeek.FRIDAY -> friday
+        DayOfWeek.SATURDAY -> saturday
+        DayOfWeek.SUNDAY -> sunday
+        else -> monday
+    }
+}
+
 @Serializable
 data class TenantFeatures(
     val hasAlcohol: Boolean = false,
     val hasHookah: Boolean = false,
+    val hasPizza: Boolean = false,
+    val hasBurger: Boolean = false,
     val hasDelivery: Boolean = false,
     val hasTakeaway: Boolean = true,
-    val hasDineIn: Boolean = true,
-    val hasWifi: Boolean = false,
-    val hasParking: Boolean = false,
-    val acceptsCreditCard: Boolean = true,
-    val acceptsCash: Boolean = true,
-    val isHalal: Boolean = false,
-    val hasOutdoorSeating: Boolean = false,
-    val hasLiveMusic: Boolean = false,
-    val isChildFriendly: Boolean = true,
-    val isPetFriendly: Boolean = false
+    val hasDineIn: Boolean = true
 )
-
-/**
- * İşletme durumu
- */
-@Serializable
-enum class TenantStatus {
-    ACTIVE,     // Aktif
-    INACTIVE,   // Pasif
-    SUSPENDED,  // Askıya alınmış
-    PENDING     // Onay bekliyor
-}
-
-/**
- * İşletme tema ayarları
- */
-@Serializable
-data class TenantTheme(
-    val primaryColor: String = "#E23744", // Hex renk kodu
-    val secondaryColor: String = "#2B2D42",
-    val accentColor: String = "#FFA726"
-)
-

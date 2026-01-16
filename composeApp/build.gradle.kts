@@ -85,6 +85,8 @@ kotlin {
             implementation(libs.coil)
             implementation(libs.kotlinx.datetime)
             implementation(libs.composeIcons.featherIcons)
+            implementation("com.russhwolf:multiplatform-settings:1.3.0")
+            implementation("com.russhwolf:multiplatform-settings-no-arg:1.3.0")
 
             implementation(libs.firebase.auth)
             implementation(libs.firebase.firestore)

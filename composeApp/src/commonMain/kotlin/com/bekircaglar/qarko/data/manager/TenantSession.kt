@@ -125,12 +125,12 @@ object TenantSession {
             TenantFeature.DELIVERY -> currentTenant?.features?.hasDelivery == true
             TenantFeature.TAKEAWAY -> currentTenant?.features?.hasTakeaway == true
             TenantFeature.DINE_IN -> currentTenant?.features?.hasDineIn == true
-            TenantFeature.WIFI -> currentTenant?.features?.hasWifi == true
-            TenantFeature.PARKING -> currentTenant?.features?.hasParking == true
-            TenantFeature.CREDIT_CARD -> currentTenant?.features?.acceptsCreditCard == true
-            TenantFeature.CASH -> currentTenant?.features?.acceptsCash == true
-            TenantFeature.HALAL -> currentTenant?.features?.isHalal == true
+
+            else -> {
+                false
+            }
         }
+
     }
 }
 
