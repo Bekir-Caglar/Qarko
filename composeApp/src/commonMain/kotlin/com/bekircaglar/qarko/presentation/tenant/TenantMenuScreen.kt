@@ -29,7 +29,6 @@ import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Cart
 import com.bekircaglar.qarko.navigation.FoodDetail
 import com.bekircaglar.qarko.navigation.QRScan
-import com.bekircaglar.qarko.navigation.Welcome
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.*
 import com.bekircaglar.qarko.presentation.tenant.component.DrawerContent
@@ -38,6 +37,9 @@ import com.bekircaglar.qarko.util.QarkoTypography
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Menu
 import compose.icons.feathericons.Search
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -60,7 +62,6 @@ fun TenantMenuScreen(navController: NavController) {
     }
 
     val totalCartCount by remember { derivedStateOf { CartManager.totalItemCount } }
-
     val categories = uiState.categories
     val categorizedItems = uiState.categorizedItems
 
@@ -108,70 +109,45 @@ fun TenantMenuScreen(navController: NavController) {
     val lazyListState = rememberLazyListState()
     val chipListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    
     val initialCategory = menuCategoryNames.firstOrNull() ?: ""
-    val selectedCategory = remember(initialCategory) { mutableStateOf(initialCategory) }
+    var selectedCategory by remember(initialCategory) { mutableStateOf(initialCategory) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    val currentCategoryIndexByScroll = remember {
-        derivedStateOf {
-            val layoutInfo = lazyListState.layoutInfo
-            val visibleItemsInfo = layoutInfo.visibleItemsInfo
-            if (visibleItemsInfo.isEmpty()) return@derivedStateOf 0
-
-            val isAtBottom = visibleItemsInfo.last().index == layoutInfo.totalItemsCount - 1
-            if (isAtBottom && visibleItemsInfo.last().offset <= layoutInfo.viewportEndOffset) {
-                var searchIndex = allItems.size - 1
-                while (searchIndex >= 0) {
-                    if (allItems[searchIndex] is String) return@derivedStateOf searchIndex
-                    searchIndex--
+    // SCROLL SENKRONİZASYONU - SnapshotFlow ile anlık takip
+    LaunchedEffect(lazyListState, allItems) {
+        snapshotFlow { lazyListState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect { firstIndex ->
+                // Görünür ilk elemandan geriye doğru en yakın kategori başlığını (String) bul
+                var i = firstIndex
+                while (i >= 0) {
+                    val currentItem = allItems.getOrNull(i)
+                    if (currentItem is String) {
+                        if (selectedCategory != currentItem) {
+                            selectedCategory = currentItem
+                        }
+                        break
+                    }
+                    i--
                 }
             }
-
-            val firstVisibleIndex = visibleItemsInfo.first().index
-            var searchIndex = firstVisibleIndex
-            while (searchIndex >= 0) {
-                if (allItems.getOrNull(searchIndex) is String) return@derivedStateOf searchIndex
-                searchIndex--
-            }
-            0
-        }
     }
 
-    LaunchedEffect(currentCategoryIndexByScroll.value) {
-        val item = allItems.getOrNull(currentCategoryIndexByScroll.value)
-        if (item is String) selectedCategory.value = item
-    }
-
-    LaunchedEffect(selectedCategory.value) {
-        val index = menuCategoryNames.indexOf(selectedCategory.value)
+    // Seçili kategori değiştikçe Chip listesini kaydır
+    LaunchedEffect(selectedCategory) {
+        val index = menuCategoryNames.indexOf(selectedCategory)
         if (index >= 0) {
-            val layoutInfo = chipListState.layoutInfo
-            val viewportWidth = layoutInfo.viewportSize.width
-            if (viewportWidth > 0) {
-                chipListState.animateScrollToItem(
-                    index = index,
-                    scrollOffset = -(viewportWidth / 2) + 100
-                )
-            }
+            chipListState.animateScrollToItem(
+                index = index,
+                scrollOffset = -150 // Chip'i daha iyi ortalamak için
+            )
         }
     }
 
     if (uiState.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = primary)
-        }
-        return
-    }
-
-    if (uiState.error != null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Bir hata oluştu", style = MaterialTheme.typography.titleMedium)
-                Text(text = uiState.error, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
-                Button(onClick = { viewModel.loadMenu() }, modifier = Modifier.padding(top = 16.dp)) {
-                    Text("Tekrar Dene")
-                }
-            }
         }
         return
     }
@@ -186,7 +162,7 @@ fun TenantMenuScreen(navController: NavController) {
                     coroutineScope.launch { 
                         drawerState.close()
                         viewModel.clearSession()
-                        navController.navigate(Welcome) {
+                        navController.navigate(QRScan) {
                             popUpTo(0)
                         }
                     } 
@@ -279,12 +255,14 @@ fun TenantMenuScreen(navController: NavController) {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             items(menuCategoryNames) { category ->
-                                val isSelected = selectedCategory.value == category
+                                val isSelected = selectedCategory == category
                                 Card(
                                     onClick = {
-                                        selectedCategory.value = category
+                                        selectedCategory = category
                                         categoryIndices[category]?.let { index ->
-                                            coroutineScope.launch { lazyListState.animateScrollToItem(index) }
+                                            coroutineScope.launch { 
+                                                lazyListState.animateScrollToItem(index) 
+                                            }
                                         }
                                     },
                                     shape = RoundedCornerShape(12.dp),

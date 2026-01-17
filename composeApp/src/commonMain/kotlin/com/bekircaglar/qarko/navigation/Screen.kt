@@ -41,7 +41,8 @@ data class FoodDetail(
     val ingredientsJson: String = "[]",
     val customizationGroupsJson: String = "[]",
     val removableItemsJson: String = "[]",
-    val allergensJson: String = "[]"
+    val allergensJson: String = "[]",
+    val suggestedPairingCategoryIdsJson: String = "[]"
 ) {
     companion object {
         fun fromFoodItem(foodItem: FoodItem): FoodDetail {
@@ -60,7 +61,8 @@ data class FoodDetail(
                 ingredientsJson = navJson.encodeToString(foodItem.ingredients),
                 customizationGroupsJson = navJson.encodeToString(foodItem.customizationGroups),
                 removableItemsJson = navJson.encodeToString(foodItem.removableItems),
-                allergensJson = navJson.encodeToString(foodItem.allergens)
+                allergensJson = navJson.encodeToString(foodItem.allergens),
+                suggestedPairingCategoryIdsJson = navJson.encodeToString(foodItem.suggestedPairingCategoryIds)
             )
         }
     }
@@ -81,7 +83,8 @@ data class FoodDetail(
             ingredients = try { navJson.decodeFromString<List<Ingredient>>(ingredientsJson) } catch (e: Exception) { emptyList() },
             customizationGroups = try { navJson.decodeFromString<List<CustomizationGroup>>(customizationGroupsJson) } catch (e: Exception) { emptyList() },
             removableItems = try { navJson.decodeFromString<List<RemovableItem>>(removableItemsJson) } catch (e: Exception) { emptyList() },
-            allergens = try { navJson.decodeFromString<List<Allergen>>(allergensJson) } catch (e: Exception) { emptyList() }
+            allergens = try { navJson.decodeFromString<List<Allergen>>(allergensJson) } catch (e: Exception) { emptyList() },
+            suggestedPairingCategoryIds = try { navJson.decodeFromString<List<String>>(suggestedPairingCategoryIdsJson) } catch (e: Exception) { emptyList() }
         )
     }
 }

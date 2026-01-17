@@ -26,7 +26,8 @@ data class MenuItem(
     val calories: Int = 0,
     val sortOrder: Int = 0,
     val createdAt: String? = null,
-    val updatedAt: String? = null
+    val updatedAt: String? = null,
+    val suggestedPairingCategoryIds: List<String> = emptyList()
 ) {
     fun toFoodItem(): FoodItem {
         val allergensList = allergens.mapNotNull { try { Allergen.valueOf(it) } catch (e: Exception) { null } }
@@ -66,7 +67,8 @@ data class MenuItem(
             isFeatured = isFeatured,
             discountPercent = discountPercent,
             prepTime = preparationTime?.toString(),
-            calories = calories
+            calories = calories,
+            suggestedPairingCategoryIds = suggestedPairingCategoryIds
         )
     }
 }

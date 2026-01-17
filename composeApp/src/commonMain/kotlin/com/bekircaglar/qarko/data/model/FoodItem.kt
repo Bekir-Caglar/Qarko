@@ -25,7 +25,8 @@ data class FoodItem(
     val isFeatured: Boolean = false,
     val discountPercent: Int = 0,
     val prepTime: String? = null,
-    val calories: Int = 0
+    val calories: Int = 0,
+    val suggestedPairingCategoryIds: List<String> = emptyList() // "Yanında İyi Gider" kategori ID'leri
 )
 
 /**

@@ -13,6 +13,7 @@ import com.bekircaglar.qarko.domain.usecase.food.AddToCartUseCase
 import com.bekircaglar.qarko.domain.usecase.food.GetFoodDetailsUseCase
 import com.bekircaglar.qarko.domain.usecase.tenant.GetTenantMenuUseCase
 import com.bekircaglar.qarko.domain.usecase.tenant.LoadTenantFromQRUseCase
+import com.bekircaglar.qarko.presentation.cart.CartViewModel
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailViewModel
 import com.bekircaglar.qarko.presentation.profile.ProfileViewModel
 import com.bekircaglar.qarko.presentation.tenant.TenantMenuViewModel
@@ -29,7 +30,6 @@ val managerModule = module {
     single { FavoritesManager }
     single { TenantSession }
     single { HistoryManager }
-    // Tip açıkça belirtilerek inference hatası giderildi
     single<Settings> { Settings() }
 }
 
@@ -49,6 +49,7 @@ val viewModelModule = module {
     viewModelOf(::TenantMenuViewModel)
     viewModelOf(::ProfileViewModel)
     viewModelOf(::FoodDetailViewModel)
+    viewModelOf(::CartViewModel)
 }
 
 val appModule = module {

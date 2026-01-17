@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -12,11 +13,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +26,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -40,21 +39,14 @@ import com.bekircaglar.qarko.data.model.Ingredient
 import com.bekircaglar.qarko.data.model.RemovableItem
 import com.bekircaglar.qarko.data.manager.CartManager
 import com.bekircaglar.qarko.data.manager.FavoritesManager
+import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.presentation.common.components.QText
-import com.bekircaglar.qarko.presentation.common.theme.black
-import com.bekircaglar.qarko.presentation.common.theme.darkBlue
-import com.bekircaglar.qarko.presentation.common.theme.darkGray
-import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
-import com.bekircaglar.qarko.presentation.common.theme.gray
-import com.bekircaglar.qarko.presentation.common.theme.lightGray
-import com.bekircaglar.qarko.presentation.common.theme.lighterGray
-import com.bekircaglar.qarko.presentation.common.theme.primary
-import com.bekircaglar.qarko.presentation.common.theme.white
-import com.bekircaglar.qarko.presentation.common.theme.yellow
+import com.bekircaglar.qarko.presentation.common.theme.*
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.Percent
+import compose.icons.feathericons.*
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.ic_heart
 import qarko.composeapp.generated.resources.ic_heart_filled
@@ -63,24 +55,24 @@ import qarko.composeapp.generated.resources.ic_plus
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
+fun FoodDetailScreen(
+    navController: NavController, 
+    foodItem: FoodItem,
+    viewModel: FoodDetailViewModel = koinViewModel()
+) {
     var quantity by remember { mutableIntStateOf(1) }
     var showIngredients by remember { mutableStateOf(false) }
     var showDetails by remember { mutableStateOf(true) }
 
-    // Dinamik seçimler için state'ler
     val selectedSingleOptions = remember { mutableStateMapOf<String, String>() }
     val selectedMultiOptions = remember { mutableStateMapOf<String, Set<String>>() }
     val removedItems = remember { mutableStateMapOf<String, Boolean>() }
 
     val scope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
+    val uiState = viewModel.uiState
 
-    val food = foodItem
-
-    // Default değerleri ayarla
-    LaunchedEffect(food) {
-        food.customizationGroups.forEach { group ->
+    LaunchedEffect(foodItem) {
+        foodItem.customizationGroups.forEach { group ->
             when (group.type) {
                 CustomizationType.SINGLE_SELECT -> {
                     val defaultOption = group.options.find { it.isDefault }?.id ?: group.options.firstOrNull()?.id
@@ -93,12 +85,13 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
                 else -> {}
             }
         }
-        food.removableItems.forEach { item ->
+        foodItem.removableItems.forEach { item ->
             removedItems[item.id] = item.isRemoved
         }
     }
 
-    // Ekstra fiyat hesaplama - derivedStateOf kullanarak reaktif hale getiriyoruz
+    val food = foodItem
+
     val extraPrice by remember {
         derivedStateOf {
             var extra = 0
@@ -133,7 +126,6 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
         }
     }
 
-    // Favori state - FavoritesManager'dan al
     val isFavorited by remember {
         derivedStateOf {
             FavoritesManager.isFavorite(food.id)
@@ -141,174 +133,114 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
     }
     val favTransition = remember { Animatable(1f) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Scrollable Content
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
+    Box(modifier = Modifier.fillMaxSize().background(white)) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
-            // Full-width Hero Image Section
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(270.dp)
-            ) {
-                // Background Image - Full width, no padding
-                AsyncImage(
-                    model = food.imageUrl,
-                    contentDescription = food.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-
-                // Gradient overlay from top (dark to transparent)
+            // Hero Image
+            item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(160.dp)
-                        .align(Alignment.TopCenter)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Black.copy(alpha = 0.9f),
-                                    Color.Black.copy(alpha = 0.7f),
-                                    Color.Black.copy(alpha = 0.7f),
-                                    Color.Black.copy(alpha = 0.5f),
-                                    Color.Black.copy(alpha = 0.3f),
-                                    Color.Transparent
-                                )
-                            )
-                        )
-                )
-
-                // Top Bar with back button, title and favorite - on top of image
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .height(270.dp)
                 ) {
-                    // Back Button
-                    IconButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.Black.copy(alpha = 0.3f))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Geri",
-                            tint = white,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-
-                    // Title
-                    QText(
-                        text = "Ürün Detayı",
-                        color = white,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                    AsyncImage(
+                        model = food.imageUrl,
+                        contentDescription = food.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
 
-                    // Favorite Button
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                favTransition.animateTo(
-                                    targetValue = 1.25f,
-                                    animationSpec = tween(120)
-                                )
-                                favTransition.animateTo(
-                                    targetValue = 1f,
-                                    animationSpec = tween(120)
-                                )
-                                FavoritesManager.toggleFavorite(food)
-                            }
-                        },
+                    Box(
                         modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.Black.copy(alpha = 0.3f))
-                            .graphicsLayer {
-                                scaleX = favTransition.value
-                                scaleY = favTransition.value
-                            }
-                    ) {
-                        Icon(
-                            painter = if (isFavorited) painterResource(Res.drawable.ic_heart_filled) else painterResource(Res.drawable.ic_heart),
-                            contentDescription = "Favori",
-                            tint = if (isFavorited) Color.Red else white,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
+                            .fillMaxWidth()
+                            .height(160.dp)
+                            .align(Alignment.TopCenter)
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Black.copy(alpha = 0.8f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
 
-                // Badges at bottom of image
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(bottom = 0.dp),
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    // Discount Badge (Red)
-                    if (food.discountPercent > 0) {
-                        Box(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = { navController.popBackStack() },
                             modifier = Modifier
-                                .clip(RoundedCornerShape(topStart = 12.dp))
-                                .background(Color(0xFFD32F2F))
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.3f))
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = FeatherIcons.Percent,
-                                    contentDescription = "İndirim",
-                                    tint = white,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                QText(
-                                    text = "%${food.discountPercent} İndirim",
-                                    color = white,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
-                                )
-                            }
+                            Icon(FeatherIcons.ArrowLeft, null, tint = white, modifier = Modifier.size(24.dp))
+                        }
+
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    favTransition.animateTo(1.25f, tween(120))
+                                    favTransition.animateTo(1f, tween(120))
+                                    FavoritesManager.toggleFavorite(food)
+                                }
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.3f))
+                                .graphicsLayer {
+                                    scaleX = favTransition.value
+                                    scaleY = favTransition.value
+                                }
+                        ) {
+                            Icon(
+                                painter = if (isFavorited) painterResource(Res.drawable.ic_heart_filled) else painterResource(Res.drawable.ic_heart),
+                                contentDescription = null,
+                                tint = if (isFavorited) Color.Red else white,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
 
-                    // Rating badge
-                    if (food.rating > 0) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(topStart = if (food.discountPercent > 0) 0.dp else 12.dp))
-                                .background(primary)
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = "Puan",
-                                    tint = yellow,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                QText(
-                                    text = ((food.rating * 10).toInt() / 10.0).toString(),
-                                    color = white,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
-                                )
-                                if (food.ratingCount > 0) {
-                                    QText(
-                                        text = " (${food.ratingCount})",
-                                        color = white.copy(alpha = 0.8f),
-                                        fontSize = 12.sp
-                                    )
+                    Row(
+                        modifier = Modifier.align(Alignment.BottomEnd),
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        if (food.discountPercent > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(topStart = 12.dp))
+                                    .background(Color(0xFFD32F2F))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(FeatherIcons.Percent, null, tint = white, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    QText("%${food.discountPercent} İndirim", color = white, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                }
+                            }
+                        }
+
+                        if (food.rating > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(topStart = if (food.discountPercent > 0) 0.dp else 12.dp))
+                                    .background(primary)
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(FeatherIcons.Star, null, tint = yellow, modifier = Modifier.size(18.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    QText(((food.rating * 10).toInt() / 10.0).toString(), color = white, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                 }
                             }
                         }
@@ -316,266 +248,115 @@ fun FoodDetailScreen(navController: NavController, foodItem: FoodItem) {
                 }
             }
 
-            // Food Details Section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(white)
-                    .padding(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.Center
+            // Details and Content
+            item {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
                     ) {
-                        QText(
-                            text = food.name,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = darkBlue
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            QText(food.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = darkBlue)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            QText(food.info, fontSize = 14.sp, color = gray)
+                        }
 
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        QText(
-                            text = food.info,
-                            fontSize = 14.sp,
-                            color = gray
-                        )
+                        Column(horizontalAlignment = Alignment.End) {
+                            if (!food.originalPrice.isNullOrEmpty()) {
+                                QText(food.originalPrice!!, fontSize = 14.sp, color = gray, textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough)
+                            }
+                            QText(food.price, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = primary)
+                        }
                     }
 
-                    Column(horizontalAlignment = Alignment.End) {
-                        if (!food.originalPrice.isNullOrEmpty()) {
-                            QText(
-                                text = food.originalPrice!!,
-                                fontSize = 14.sp,
-                                color = gray,
-                                textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
-                            )
-                        }
-                        QText(
-                            text = food.price,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = primary
-                        )
+                    Spacer(modifier = Modifier.height(24.dp))
 
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TabButtonAnimated("Detaylar", isSelected = showDetails, onClick = { showDetails = true; showIngredients = false })
+                        TabButtonAnimated("İçindekiler", isSelected = showIngredients, onClick = { showDetails = false; showIngredients = true })
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = lightGray)
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    TabButtonAnimated(
-                        text = "Detaylar",
-                        isSelected = showDetails,
-                        onClick = {
-                            showDetails = true
-                            showIngredients = false
-                        }
-                    )
-
-                    TabButtonAnimated(
-                        text = "İçindekiler",
-                        isSelected = showIngredients,
-                        onClick = {
-                            showDetails = false
-                            showIngredients = true
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider(color = lightGray)
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (showDetails) {
-                    Column {
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // Dinamik özelleştirme grupları - Custom Dropdownlar
+            // Tab Content
+            if (showDetails) {
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                         food.customizationGroups.forEach { group ->
-                            CustomDropdownSection(
-                                group = group,
-                                selectedSingleOptions = selectedSingleOptions,
-                                selectedMultiOptions = selectedMultiOptions,
-                                onSingleSelect = { optionId ->
-                                    selectedSingleOptions[group.id] = optionId
-                                },
-                                onMultiSelect = { optionId, isSelected ->
-                                    val currentSet = selectedMultiOptions[group.id]?.toMutableSet() ?: mutableSetOf()
-                                    if (isSelected) currentSet.add(optionId) else currentSet.remove(optionId)
-                                    selectedMultiOptions[group.id] = currentSet
+                            CustomDropdownSection(group, selectedSingleOptions, selectedMultiOptions,
+                                onSingleSelect = { selectedSingleOptions[group.id] = it },
+                                onMultiSelect = { id, selected ->
+                                    val current = selectedMultiOptions[group.id]?.toMutableSet() ?: mutableSetOf()
+                                    if (selected) current.add(id) else current.remove(id)
+                                    selectedMultiOptions[group.id] = current
                                 }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                         }
 
-                        // Çıkarılabilir malzemeler
                         if (food.removableItems.isNotEmpty()) {
-                            RemovableItemsSection(
-                                removableItems = food.removableItems,
-                                removedItems = removedItems,
-                                onToggleRemove = { itemId ->
-                                    removedItems[itemId] = !(removedItems[itemId] ?: false)
-                                }
-                            )
+                            RemovableItemsSection(food.removableItems, removedItems, onToggleRemove = { removedItems[it] = !(removedItems[it] ?: false) })
                             Spacer(modifier = Modifier.height(20.dp))
                         }
 
-                        // Alerjen bilgileri
                         if (food.allergens.isNotEmpty()) {
-                            AllergenSection(allergens = food.allergens)
+                            AllergenSection(food.allergens)
                         }
                     }
                 }
+            }
 
-                if (showIngredients) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(lightGray.copy(alpha = 0.2f))
-                            .padding(16.dp)
-                    ) {
+            if (showIngredients) {
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(lightGray.copy(alpha = 0.2f)).padding(16.dp)) {
                         if (food.ingredients.isNotEmpty()) {
-                            QText(
-                                text = "İçindekiler",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = darkBlue,
-                                modifier = Modifier.padding(bottom = 12.dp)
-                            )
-
-                            // Ana malzemeleri (isMain) en başa alıyoruz
-                            val sortedIngredients = remember(food.ingredients) {
-                                food.ingredients.sortedByDescending { it.isMain }
-                            }
-
+                            val sortedIngredients = remember(food.ingredients) { food.ingredients.sortedByDescending { it.isMain } }
+                            val rowCount = (sortedIngredients.size + 2) / 3
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(3),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                                modifier = Modifier.height(
-                                    ((sortedIngredients.size / 3 + 1) * 90).coerceAtMost(270).dp
-                                )
+                                userScrollEnabled = false,
+                                modifier = Modifier.height((rowCount * 95).dp).fillMaxWidth()
                             ) {
-                                items(sortedIngredients) { ingredient ->
-                                    IngredientItem(ingredient = ingredient)
-                                }
+                                items(sortedIngredients) { IngredientItem(it) }
                             }
                         } else {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                QText(
-                                    text = "İçerik bilgisi bulunmuyor",
-                                    color = gray,
-                                    fontSize = 14.sp
-                                )
-                            }
+                            QText("İçerik bilgisi bulunmuyor", color = gray, fontSize = 14.sp, modifier = Modifier.padding(32.dp).fillMaxWidth(), textAlign = TextAlign.Center)
                         }
                     }
                 }
-
-                // Bottom spacing for the fixed bottom bar
-                Spacer(modifier = Modifier.height(120.dp))
             }
         }
 
         // Fixed Bottom Bar
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter),
-            color = white,
-            shadowElevation = 16.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Quantity selector
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .shadow(1.dp, RoundedCornerShape(12.dp))
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(lighterGray)
-                        .padding(horizontal = 4.dp, vertical = 4.dp)
-                ) {
-                    IconButton(
-                        enabled = quantity > 1,
-                        onClick = { quantity-- },
-                        modifier = Modifier.size(30.dp),
-                    ) {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_minus),
-                            contentDescription = "Azalt",
-                            tint = darkBlue,
-                            modifier = Modifier.size(18.dp)
-                        )
+        Surface(modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter), color = white, shadowElevation = 16.dp) {
+            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.shadow(1.dp, RoundedCornerShape(12.dp)).clip(RoundedCornerShape(12.dp)).background(lighterGray).padding(4.dp)) {
+                    IconButton(enabled = quantity > 1, onClick = { quantity-- }, modifier = Modifier.size(30.dp)) {
+                        Icon(painterResource(Res.drawable.ic_minus), null, tint = darkBlue, modifier = Modifier.size(18.dp))
                     }
-
-                    QText(
-                        text = quantity.toString(),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = darkPrimary,
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    )
-
-                    IconButton(
-                        onClick = { quantity++ },
-                        modifier = Modifier.size(30.dp),
-                    ) {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_plus),
-                            contentDescription = "Artır",
-                            tint = darkBlue,
-                            modifier = Modifier.size(18.dp)
-                        )
+                    QText(quantity.toString(), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = darkPrimary, modifier = Modifier.padding(horizontal = 10.dp))
+                    IconButton(onClick = { quantity++ }, modifier = Modifier.size(30.dp)) {
+                        Icon(painterResource(Res.drawable.ic_plus), null, tint = darkBlue, modifier = Modifier.size(18.dp))
                     }
                 }
 
                 Button(
                     onClick = {
-                        CartManager.addToCart(
-                            foodItem = food,
-                            quantity = quantity,
-                            selectedSingleOptions = selectedSingleOptions.toMap(),
-                            selectedMultiOptions = selectedMultiOptions.mapValues { it.value.toSet() },
-                            removedItems = removedItems.filter { it.value }.keys,
-                            totalPrice = totalPrice.toDouble()
-                        )
+                        CartManager.addToCart(food, quantity, selectedSingleOptions.toMap(), selectedMultiOptions.mapValues { it.value.toSet() }, removedItems.filter { it.value }.keys, totalPrice.toDouble())
                         navController.popBackStack()
                     },
-                    modifier = Modifier
-                        .height(52.dp)
-                        .weight(1f)
-                        .padding(start = 16.dp),
+                    modifier = Modifier.height(52.dp).weight(1f).padding(start = 16.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = primary)
                 ) {
-                    QText(
-                        text = "Sepete Ekle • ₺${totalPrice.toInt()}",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = white
-                    )
+                    QText("Sepete Ekle • ₺${totalPrice.toInt()}", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = white)
                 }
             }
         }
@@ -605,10 +386,44 @@ private fun CustomDropdownSection(
     }
 
     Column {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             QText(text = group.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = darkBlue)
-            if (group.isRequired) {
-                QText(text = " *", color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = lighterGray,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (group.isRequired) {
+                        Icon(
+                            imageVector = FeatherIcons.Check,
+                            contentDescription = null,
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        QText(
+                            text = "Zorunlu",
+                            color = darkGray,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        QText(
+                            text = "İsteğe Bağlı",
+                            color = darkGray,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
         }
 
@@ -627,7 +442,7 @@ private fun CustomDropdownSection(
                 ) {
                     QText(text = displayText, color = darkGray, fontSize = 14.sp)
                     Icon(
-                        imageVector = if (expanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowDown,
+                        imageVector = Icons.Default.KeyboardArrowDown,
                         contentDescription = null,
                         tint = gray,
                         modifier = Modifier.graphicsLayer { rotationZ = if (expanded) 180f else 0f }
@@ -712,7 +527,7 @@ private fun RemovableItemsSection(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (isRemoved) {
-                            Icon(Icons.Default.Close, null, tint = Color.Red, modifier = Modifier.size(14.dp))
+                            Icon(androidx.compose.material.icons.Icons.Default.Close, null, tint = Color.Red, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                         }
                         QText(
@@ -736,7 +551,7 @@ private fun AllergenSection(allergens: List<Allergen>) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(bottom = 8.dp)
         ) {
-            Icon(Icons.Default.Warning, null, tint = Color(0xFFFF9800), modifier = Modifier.size(16.dp))
+            Icon(imageVector = FeatherIcons.AlertTriangle, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(6.dp))
             QText(text = "Alerjen Bilgisi", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = darkBlue)
         }
@@ -781,7 +596,6 @@ private fun IngredientItem(ingredient: Ingredient) {
                 .background(if (ingredient.isMain) primary.copy(alpha = 0.1f) else white),
             contentAlignment = Alignment.Center
         ) {
-            // Eğer iconName boşsa varsayılan bir emoji (🌿) gösteriyoruz
             QText(
                 text = if (ingredient.iconName.isBlank()) "🌿" else ingredient.iconName,
                 fontSize = 22.sp
