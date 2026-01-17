@@ -37,9 +37,8 @@ import com.bekircaglar.qarko.util.QarkoTypography
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Menu
 import compose.icons.feathericons.Search
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -112,24 +111,26 @@ fun TenantMenuScreen(navController: NavController) {
     
     val initialCategory = menuCategoryNames.firstOrNull() ?: ""
     var selectedCategory by remember(initialCategory) { mutableStateOf(initialCategory) }
+    var isManualClick by remember { mutableStateOf(false) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    // SCROLL SENKRONİZASYONU - SnapshotFlow ile anlık takip
+    // SCROLL SENKRONİZASYONU
     LaunchedEffect(lazyListState, allItems) {
         snapshotFlow { lazyListState.firstVisibleItemIndex }
             .distinctUntilChanged()
             .collect { firstIndex ->
-                // Görünür ilk elemandan geriye doğru en yakın kategori başlığını (String) bul
-                var i = firstIndex
-                while (i >= 0) {
-                    val currentItem = allItems.getOrNull(i)
-                    if (currentItem is String) {
-                        if (selectedCategory != currentItem) {
-                            selectedCategory = currentItem
+                if (!isManualClick) {
+                    var i = firstIndex
+                    while (i >= 0) {
+                        val currentItem = allItems.getOrNull(i)
+                        if (currentItem is String) {
+                            if (selectedCategory != currentItem) {
+                                selectedCategory = currentItem
+                            }
+                            break
                         }
-                        break
+                        i--
                     }
-                    i--
                 }
             }
     }
@@ -140,7 +141,7 @@ fun TenantMenuScreen(navController: NavController) {
         if (index >= 0) {
             chipListState.animateScrollToItem(
                 index = index,
-                scrollOffset = -150 // Chip'i daha iyi ortalamak için
+                scrollOffset = -150
             )
         }
     }
@@ -248,6 +249,7 @@ fun TenantMenuScreen(navController: NavController) {
                             )
                         )
 
+                        // ESKİ HALİ: Chip tasarımı
                         LazyRow(
                             state = chipListState,
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
@@ -258,10 +260,15 @@ fun TenantMenuScreen(navController: NavController) {
                                 val isSelected = selectedCategory == category
                                 Card(
                                     onClick = {
-                                        selectedCategory = category
-                                        categoryIndices[category]?.let { index ->
-                                            coroutineScope.launch { 
-                                                lazyListState.animateScrollToItem(index) 
+                                        if (selectedCategory != category) {
+                                            coroutineScope.launch {
+                                                isManualClick = true
+                                                selectedCategory = category
+                                                categoryIndices[category]?.let { index ->
+                                                    lazyListState.animateScrollToItem(index)
+                                                }
+                                                delay(500)
+                                                isManualClick = false
                                             }
                                         }
                                     },

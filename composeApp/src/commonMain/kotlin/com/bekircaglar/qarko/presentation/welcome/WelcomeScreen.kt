@@ -3,6 +3,7 @@ package com.bekircaglar.qarko.presentation.welcome
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +30,7 @@ import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
 import com.bekircaglar.qarko.navigation.QRScan
 import com.bekircaglar.qarko.navigation.TenantMenu
+import com.bekircaglar.qarko.navigation.Welcome
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.darkBlue
 import com.bekircaglar.qarko.presentation.common.theme.gray
@@ -38,9 +40,7 @@ import com.bekircaglar.qarko.presentation.common.theme.surfaceGray
 import com.bekircaglar.qarko.util.QarkoTypography
 import com.bekircaglar.qarko.presentation.common.theme.white
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.Clock
-import compose.icons.feathericons.Maximize
-import compose.icons.feathericons.ChevronRight
+import compose.icons.feathericons.*
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -77,7 +77,27 @@ fun WelcomeScreen(navController: NavController) {
                     containerColor = Color.Transparent,
                 ),
                 title = {},
-                actions = {}
+                actions = {
+                    // Developer Only Button - Üst sağ köşede küçük ve şeffaf
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                loadTenantUseCase.loadDirect("beko-yeri", "ic4Db9JrLcbhkHXrAJYM")
+                                    .onSuccess {
+                                        navController.navigate(TenantMenu)
+                                    }
+                            }
+                        },
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = FeatherIcons.Code,
+                            contentDescription = "Dev Mode",
+                            tint = gray.copy(alpha = 0.3f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             )
         },
         containerColor = surfaceGray
@@ -165,7 +185,7 @@ fun WelcomeScreen(navController: NavController) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        painter = painterResource(Res.drawable.ic_qr),
+                        imageVector = FeatherIcons.Maximize,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
                         tint = Color.White

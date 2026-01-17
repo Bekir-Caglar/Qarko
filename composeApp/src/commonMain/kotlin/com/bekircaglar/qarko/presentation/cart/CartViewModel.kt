@@ -38,34 +38,39 @@ class CartViewModel(
             uiState = uiState.copy(isRecommendationsLoading = true)
             
             try {
-                // 1. Tüm menü ürünlerini al (veya kategori bazlı sorgu atılabilir)
-                // Performans için tüm menüyü bir kez çekip filtrelemek mantıklı olabilir 
-                // ya da direkt kategori listesiyle sorgu atılabilir.
+                // 1. Tüm menü ürünlerini ve kategorileri al
                 val menuResult = tenantRepository.getFoodItems(tenantId)
+                val categoryResult = tenantRepository.getCategories(tenantId)
+                
                 val allMenuItems = menuResult.getOrDefault(emptyList())
+                val allCategories = categoryResult.getOrDefault(emptyList())
 
-                // 2. Sepetteki ürünlerin önerilen kategori ID'lerini topla
-                // Önemli: Sepetteki FoodItem nesnelerine ulaşmamız lazım. 
-                // Şimdilik sepette FoodItem'ın kendisi de olabilirdi ama ID üzerinden eşleştireceğiz.
-                
-                // NOT: CartManager'daki CartItemData'ya FoodItem referansı eklemek gerekebilir 
-                // ya da repository'den sepetteki id'lere göre FoodItem'ları tekrar çekmeliyiz.
-                // Basitlik adına tüm menü içinden sepettekileri bulup suggestedPairingCategoryIds'leri alıyoruz.
-                
+                // 2. Sepetteki ürünleri tespit et
                 val cartFoodIds = cartItems.map { it.foodId }.toSet()
                 val cartFoodItems = allMenuItems.filter { it.id in cartFoodIds }
                 
-                val suggestedCategoryIds = cartFoodItems
-                    .flatMap { it.suggestedPairingCategoryIds }
-                    .distinct()
-                    .take(10) // Firestore limitine takılmamak için
+                // 3. Önerilecek kategori ID'lerini topla
+                val suggestedCategoryIds = mutableSetOf<String>()
+                
+                cartFoodItems.forEach { foodItem ->
+                    if (foodItem.suggestedPairingCategoryIds.isNotEmpty()) {
+                        // Ürün bazlı ayar varsa onu ekle (Override)
+                        suggestedCategoryIds.addAll(foodItem.suggestedPairingCategoryIds)
+                    } else {
+                        // Ürün bazlı yoksa kategori bazlı ayarı bul ve ekle
+                        val category = allCategories.find { it.id == foodItem.category }
+                        category?.suggestedPairingCategoryIds?.let {
+                            suggestedCategoryIds.addAll(it)
+                        }
+                    }
+                }
 
                 if (suggestedCategoryIds.isEmpty()) {
                     uiState = uiState.copy(recommendations = emptyList(), isRecommendationsLoading = false)
                     return@launch
                 }
 
-                // 3. Bu kategorilerdeki ürünleri filtrele
+                // 4. Belirlenen kategorilerdeki uygun ürünleri çek
                 val recommendations = allMenuItems.filter { 
                     it.category in suggestedCategoryIds && 
                     it.id !in cartFoodIds // Zaten sepette olanı önerme

@@ -39,6 +39,7 @@ import com.bekircaglar.qarko.data.model.Ingredient
 import com.bekircaglar.qarko.data.model.RemovableItem
 import com.bekircaglar.qarko.data.manager.CartManager
 import com.bekircaglar.qarko.data.manager.FavoritesManager
+import com.bekircaglar.qarko.presentation.common.components.AddToCartDialog
 import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.*
@@ -56,13 +57,14 @@ import qarko.composeapp.generated.resources.ic_plus
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun FoodDetailScreen(
-    navController: NavController, 
+    navController: NavController,
     foodItem: FoodItem,
     viewModel: FoodDetailViewModel = koinViewModel()
 ) {
     var quantity by remember { mutableIntStateOf(1) }
     var showIngredients by remember { mutableStateOf(false) }
     var showDetails by remember { mutableStateOf(true) }
+    var showAddToCartSuccess by remember { mutableStateOf(false) }
 
     val selectedSingleOptions = remember { mutableStateMapOf<String, String>() }
     val selectedMultiOptions = remember { mutableStateMapOf<String, Set<String>>() }
@@ -132,6 +134,13 @@ fun FoodDetailScreen(
         }
     }
     val favTransition = remember { Animatable(1f) }
+
+    if (showAddToCartSuccess) {
+        AddToCartDialog(onDismiss = {
+            showAddToCartSuccess = false
+            navController.popBackStack()
+        })
+    }
 
     Box(modifier = Modifier.fillMaxSize().background(white)) {
         LazyColumn(
@@ -350,7 +359,7 @@ fun FoodDetailScreen(
                 Button(
                     onClick = {
                         CartManager.addToCart(food, quantity, selectedSingleOptions.toMap(), selectedMultiOptions.mapValues { it.value.toSet() }, removedItems.filter { it.value }.keys, totalPrice.toDouble())
-                        navController.popBackStack()
+                        showAddToCartSuccess = true
                     },
                     modifier = Modifier.height(52.dp).weight(1f).padding(start = 16.dp),
                     shape = RoundedCornerShape(14.dp),

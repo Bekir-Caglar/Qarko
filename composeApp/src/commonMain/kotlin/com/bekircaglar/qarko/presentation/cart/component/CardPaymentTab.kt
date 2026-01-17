@@ -24,7 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +38,7 @@ import com.bekircaglar.qarko.data.model.CartItemData
 import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.data.manager.CartManager
 import com.bekircaglar.qarko.presentation.cart.CartViewModel
+import com.bekircaglar.qarko.presentation.common.components.AddToCartDialog
 import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
 import com.bekircaglar.qarko.presentation.common.theme.gray
@@ -55,6 +56,11 @@ fun CardPaymentTab(
     viewModel: CartViewModel = koinViewModel()
 ) {
     val uiState = viewModel.uiState
+    var showAddToCartSuccess by remember { mutableStateOf(false) }
+
+    if (showAddToCartSuccess) {
+        AddToCartDialog(onDismiss = { showAddToCartSuccess = false })
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -162,6 +168,7 @@ fun CardPaymentTab(
                                                 removedItems = emptySet(),
                                                 totalPrice = price
                                             )
+                                            showAddToCartSuccess = true
                                             viewModel.loadUpsellRecommendations() // Sepet güncellendiği için önerileri tazele
                                         }
                                     )
