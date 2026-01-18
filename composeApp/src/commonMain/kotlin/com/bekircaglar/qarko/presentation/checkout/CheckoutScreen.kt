@@ -1,7 +1,6 @@
 package com.bekircaglar.qarko.presentation.checkout
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -25,12 +24,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
@@ -41,6 +39,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,6 +84,8 @@ import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.mastercard
 import androidx.compose.foundation.Image
+import com.bekircaglar.qarko.navigation.Orders
+import org.koin.compose.viewmodel.koinViewModel
 
 private data class PaymentTab(
     val title: String,
@@ -98,28 +99,36 @@ private val paymentTabs = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CheckoutScreen(navController: NavController) {
+fun CheckoutScreen(
+    navController: NavController,
+    viewModel: CheckoutViewModel = koinViewModel()
+) {
+    val uiState = viewModel.uiState
     val scrollState = rememberScrollState()
-    val deliveryFee = 15.0
     val cartTotal = CartManager.totalPrice
-    val totalAmount = cartTotal + deliveryFee
+    val totalAmount = cartTotal
 
-    var orderNote by remember { mutableStateOf("") }
-    val maxNoteLength = 200
-    var selectedPaymentMethod by remember { mutableStateOf(0) } // 0: Card, 1: Cash
-
-    // SavedCard: (cardName, maskedNumber - ilk 5 ve son 2 numara)
-    data class SavedCard(
-        val name: String,
-        val maskedNumber: String
-    )
+    var selectedCardIndex by remember { mutableStateOf(0) }
+    var isCardListExpanded by remember { mutableStateOf(false) }
 
     val savedCards = listOf(
         SavedCard("Ziraat Kartım", "5425 88** **** **18"),
         SavedCard("Garanti Bonus", "5234 56** **** **42")
     )
-    var selectedCardIndex by remember { mutableStateOf(0) }
-    var isCardListExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is CheckoutEvent.OrderSuccess -> {
+                    navController.navigate(Orders) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = false
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
         containerColor = surfaceGray,
@@ -142,8 +151,11 @@ fun CheckoutScreen(navController: NavController) {
             )
         },
         bottomBar = {
-            CheckoutBottomBar(totalAmount = totalAmount) {
-                // Place order action
+            CheckoutBottomBar(
+                totalAmount = totalAmount,
+                isLoading = uiState.isLoading
+            ) {
+                viewModel.placeOrder()
             }
         }
     ) { paddingValues ->
@@ -165,7 +177,7 @@ fun CheckoutScreen(navController: NavController) {
                         .border(1.dp, gray.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
                         .padding(16.dp)
                 ) {
-                    if (orderNote.isEmpty()) {
+                    if (uiState.orderNote.isEmpty()) {
                         Text(
                             text = "Siparişiniz ile ilgili eklemek istediğiniz bir not var mı?",
                             color = gray,
@@ -173,8 +185,8 @@ fun CheckoutScreen(navController: NavController) {
                         )
                     }
                     BasicTextField(
-                        value = orderNote,
-                        onValueChange = { if (it.length <= maxNoteLength) orderNote = it },
+                        value = uiState.orderNote,
+                        onValueChange = { viewModel.onOrderNoteChange(it) },
                         textStyle = androidx.compose.ui.text.TextStyle(
                             fontSize = 14.sp,
                             color = black
@@ -183,7 +195,7 @@ fun CheckoutScreen(navController: NavController) {
                     )
 
                     Text(
-                        text = "${orderNote.length}/$maxNoteLength",
+                        text = "${uiState.orderNote.length}/200",
                         fontSize = 10.sp,
                         color = gray,
                         modifier = Modifier.align(Alignment.BottomEnd)
@@ -212,8 +224,7 @@ fun CheckoutScreen(navController: NavController) {
                             Text("🎁", fontSize = 20.sp)
                         }
                         Spacer(modifier = Modifier.size(12.dp))
-                        Column(
-                        ) {
+                        Column {
                             Text(
                                 text = "Kampanya Seç",
                                 fontSize = 14.sp,
@@ -243,51 +254,37 @@ fun CheckoutScreen(navController: NavController) {
                             color = primary
                         )
                     }
-
                 }
             }
 
             // Payment Method Section
             SectionCard(title = "Ödeme Yöntemi") {
                 Column {
-                    // Payment Method TabRow
                     TabRow(
-                        selectedTabIndex = selectedPaymentMethod,
+                        selectedTabIndex = uiState.selectedPaymentMethodIndex,
                         containerColor = white,
                         contentColor = primary,
                         indicator = { tabPositions ->
                             Box(
                                 modifier = Modifier
-                                    .tabIndicatorOffset(tabPositions[selectedPaymentMethod])
+                                    .tabIndicatorOffset(tabPositions[uiState.selectedPaymentMethodIndex])
                                     .height(3.dp)
                                     .padding(horizontal = 32.dp)
                                     .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
                                     .background(primary)
                             )
-                        },
-                        divider = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .background(lightGray.copy(alpha = 0.5f))
-                            )
                         }
                     ) {
                         paymentTabs.forEachIndexed { index, tab ->
-                            val isSelected = selectedPaymentMethod == index
+                            val isSelected = uiState.selectedPaymentMethodIndex == index
                             val textColor by animateColorAsState(
                                 targetValue = if (isSelected) primary else gray,
-                                animationSpec = tween(300),
                                 label = "tabTextColor"
                             )
 
                             Tab(
                                 selected = isSelected,
-                                onClick = {
-                                    selectedPaymentMethod = index
-                                    if (index == 0) isCardListExpanded = true else isCardListExpanded = false
-                                },
+                                onClick = { viewModel.onPaymentMethodChange(index) },
                                 modifier = Modifier.padding(vertical = 4.dp)
                             ) {
                                 Row(
@@ -315,17 +312,14 @@ fun CheckoutScreen(navController: NavController) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Payment Method Content
-                    when (selectedPaymentMethod) {
+                    when (uiState.selectedPaymentMethodIndex) {
                         0 -> {
-                            // Card Payment Content
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(lighterGray.copy(alpha = 0.2f))
                             ) {
-                                // Card Header
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -364,12 +358,9 @@ fun CheckoutScreen(navController: NavController) {
                                     )
                                 }
 
-                                // Expanded List
                                 if (isCardListExpanded) {
-                                    Column(modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp)) {
+                                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                                         HorizontalDivider(color = gray.copy(alpha = 0.1f))
-                                        Spacer(modifier = Modifier.height(8.dp))
-
                                         savedCards.forEachIndexed { index, card ->
                                             if (index != selectedCardIndex) {
                                                 Row(
@@ -405,7 +396,6 @@ fun CheckoutScreen(navController: NavController) {
                                             }
                                         }
 
-                                        // Add Card Button
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -421,7 +411,7 @@ fun CheckoutScreen(navController: NavController) {
                                                         cornerRadius = CornerRadius(8.dp.toPx())
                                                     )
                                                 }
-                                                .clickable { /* TODO: Add Card Logic */ }
+                                                .clickable { }
                                                 .padding(12.dp),
                                             contentAlignment = Alignment.Center
                                         ) {
@@ -446,7 +436,6 @@ fun CheckoutScreen(navController: NavController) {
                             }
                         }
                         1 -> {
-                            // Cash Payment Content
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -463,7 +452,7 @@ fun CheckoutScreen(navController: NavController) {
                                     tint = primary
                                 )
                                 Text(
-                                    text = "Siparişiniz hazırlandığında kasada nakit veya kredi kartı ile ödeme yapabilirsiniz. Ekstra ücret alınmaz.",
+                                    text = "Siparişiniz hazırlandığında kasada nakit veya kredi kartı ile ödeme yapabilirsiniz.",
                                     fontSize = 14.sp,
                                     color = black,
                                     lineHeight = 20.sp
@@ -478,8 +467,7 @@ fun CheckoutScreen(navController: NavController) {
             SectionCard(title = "Ödeme Özeti") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SummaryRow(title = "Ara Toplam", amount = cartTotal)
-                    SummaryRow(title = "Teslimat Ücreti", amount = deliveryFee)
-
+                    
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 8.dp),
                         color = gray.copy(alpha = 0.2f)
@@ -506,10 +494,15 @@ fun CheckoutScreen(navController: NavController) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(80.dp)) // Padding for bottom bar
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
+
+data class SavedCard(
+    val name: String,
+    val maskedNumber: String
+)
 
 @Composable
 fun SectionCard(
@@ -523,94 +516,14 @@ fun SectionCard(
             .background(white, RoundedCornerShape(12.dp))
             .padding(16.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = black,
             modifier = Modifier.padding(bottom = 12.dp)
-        ) {
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = black
-            )
-        }
+        )
         content()
-    }
-}
-
-@Composable
-fun PaymentOptionItem(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    leadingIcon: @Composable () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(lighterGray.copy(alpha = 0.2f))
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            leadingIcon()
-            Spacer(modifier = Modifier.size(12.dp))
-            Text(
-                text = text,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = black
-            )
-        }
-
-        RadioButton(
-            selected = selected,
-            onClick = onClick,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = primary,
-                unselectedColor = gray
-            )
-        )
-    }
-}
-
-@Composable
-fun DropdownSelector(
-    text: String,
-    leadingIcon: (@Composable () -> Unit)? = null,
-    backgroundColor: Color = lighterGray.copy(alpha = 0.2f)
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
-            .clickable { }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (leadingIcon != null) {
-                leadingIcon()
-                Spacer(modifier = Modifier.size(12.dp))
-            }
-            Text(
-                text = text,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = black
-            )
-        }
-        Icon(
-            imageVector = FeatherIcons.ChevronDown,
-            contentDescription = null,
-            tint = gray,
-            modifier = Modifier.size(20.dp)
-        )
     }
 }
 
@@ -638,6 +551,7 @@ fun SummaryRow(title: String, amount: Double) {
 @Composable
 fun CheckoutBottomBar(
     totalAmount: Double,
+    isLoading: Boolean,
     onPlaceOrder: () -> Unit
 ) {
     Surface(
@@ -652,6 +566,7 @@ fun CheckoutBottomBar(
         ) {
             Button(
                 onClick = onPlaceOrder,
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -660,23 +575,27 @@ fun CheckoutBottomBar(
                     containerColor = primary
                 )
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = FeatherIcons.Check,
-                        contentDescription = null,
-                        tint = white,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text(
-                        text = "Siparişi Ver - ₺ ${totalAmount.toInt()}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = white
-                    )
+                if (isLoading) {
+                    CircularProgressIndicator(color = white, modifier = Modifier.size(24.dp))
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = FeatherIcons.Check,
+                            contentDescription = null,
+                            tint = white,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Text(
+                            text = "Siparişi Ver - ₺ ${totalAmount.toInt()}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = white
+                        )
+                    }
                 }
             }
 
@@ -697,8 +616,6 @@ fun CheckoutBottomBar(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-
-            Spacer(modifier = Modifier.height(16.dp)) // Safe area padding
         }
     }
 }

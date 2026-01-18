@@ -51,6 +51,8 @@ fun TenantMenuScreen(navController: NavController) {
     val viewModel = koinViewModel<TenantMenuViewModel>()
     val uiState = viewModel.uiState
     val currentTenant = TenantSession.currentTenant
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
     LaunchedEffect(Unit) {
         if (!TenantSession.isSessionActive && uiState.categories.isEmpty()) {
