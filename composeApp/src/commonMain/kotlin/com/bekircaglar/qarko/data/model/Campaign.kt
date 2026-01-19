@@ -1,7 +1,7 @@
 package com.bekircaglar.qarko.data.model
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import dev.gitlive.firebase.firestore.Timestamp
 
 /**
  * Kampanya modeli
@@ -19,8 +19,8 @@ data class Campaign(
     val validity: CampaignValidity = CampaignValidity(),
     val usage: CampaignUsage = CampaignUsage(),
     val imageUrl: String? = null,
-    val createdAt: Instant? = null,
-    val updatedAt: Instant? = null
+    val createdAt: Timestamp? = null,
+    val updatedAt: Timestamp? = null
 )
 
 /**
@@ -35,21 +35,29 @@ enum class CampaignType {
 }
 
 @Serializable
+enum class CampaignScope {
+    ALL,
+    CATEGORY,
+    ITEM
+}
+
+@Serializable
 data class CampaignConditions(
-    val minOrderAmount: Double? = null, // Minimum sepet tutarı
-    val maxDiscountAmount: Double? = null, // Maksimum indirim tutarı
-    val applicableCategories: List<String>? = null, // Geçerli kategoriler (boş = tümü)
-    val applicableItems: List<String>? = null, // Geçerli ürünler (boş = tümü)
-    val applicableOrderTypes: List<String>? = null, // 'DINE_IN' | 'TAKEAWAY' | 'DELIVERY'
-    val applicableDays: List<Int>? = null, // 0-6, Sunday = 0
+    val minOrderAmount: Double? = null, 
+    val maxDiscountAmount: Double? = null, 
+    val scope: CampaignScope = CampaignScope.ALL,
+    val applicableCategories: List<String>? = null, 
+    val applicableItems: List<String>? = null, 
+    val applicableOrderTypes: List<String>? = null, 
+    val applicableDays: List<Int>? = null, 
     val applicableHours: CampaignHours? = null,
     val buyQuantity: Int? = null,
     val getQuantity: Int? = null,
-    val freeItemId: String? = null, // Bedava verilecek ürün
-    val maxUsagePerUser: Int? = null, // Kullanıcı başına kullanım limiti
-    val maxTotalUsage: Int? = null, // Toplam kullanım limiti
-    val requiresCode: Boolean? = null, // Kod gerekli mi?
-    val code: String? = null // Promosyon kodu (opsiyonel)
+    val freeItemId: String? = null, 
+    val maxUsagePerUser: Int? = null, 
+    val maxTotalUsage: Int? = null, 
+    val requiresCode: Boolean? = null, 
+    val code: String? = null 
 )
 
 @Serializable
@@ -63,8 +71,8 @@ data class CampaignHours(
  */
 @Serializable
 data class CampaignValidity(
-    val startDate: Instant? = null, // Başlangıç tarihi
-    val endDate: Instant? = null, // Bitiş tarihi
+    val startDate: Timestamp? = null,
+    val endDate: Timestamp? = null,
     val isActive: Boolean = true
 )
 
@@ -86,6 +94,6 @@ data class UserCampaignUsage(
     val campaignId: String = "",
     val userId: String = "",
     val usageCount: Int = 0,
-    val lastUsedAt: Long? = null,
+    val lastUsedAt: Timestamp? = null,
     val totalDiscountReceived: Double = 0.0
 )

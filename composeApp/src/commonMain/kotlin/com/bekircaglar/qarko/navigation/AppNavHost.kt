@@ -1,6 +1,7 @@
 package com.bekircaglar.qarko.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -13,12 +14,14 @@ import com.bekircaglar.qarko.presentation.campaign.CampaignScreen
 import com.bekircaglar.qarko.presentation.cart.CartScreen
 import com.bekircaglar.qarko.presentation.checkout.CampaignSelectScreen
 import com.bekircaglar.qarko.presentation.checkout.CheckoutScreen
+import com.bekircaglar.qarko.presentation.checkout.CheckoutViewModel
 import com.bekircaglar.qarko.presentation.orders.OrdersScreen
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailScreen
 import com.bekircaglar.qarko.presentation.profile.ProfileScreen
 import com.bekircaglar.qarko.presentation.tenant.TenantMenuScreen
 import com.bekircaglar.qarko.presentation.welcome.QRScanScreen
 import com.bekircaglar.qarko.presentation.welcome.WelcomeScreen
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Main navigation component that defines the app's navigation graph
@@ -67,8 +70,13 @@ fun AppNavHost(
             CampaignScreen(navController)
         }
 
-        composable<CampaignSelect> {
-            CampaignSelectScreen(navController)
+        composable<CampaignSelect> { backStackEntry ->
+            // Checkout ekranıyla aynı ViewModel'i paylaşması için Checkout'un backstack entry'sini kullanıyoruz
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry<Checkout>()
+            }
+            val checkoutViewModel: CheckoutViewModel = koinViewModel(viewModelStoreOwner = parentEntry)
+            CampaignSelectScreen(navController, checkoutViewModel)
         }
 
         composable<Profile> {

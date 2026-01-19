@@ -17,8 +17,7 @@ class CreateOrderUseCase(
         paymentMethod: PaymentMethod,
         notes: String = "",
         discountAmount: Double = 0.0,
-        discountCode: String? = null,
-        campaignId: String? = null
+        discountCode: String? = null
     ): Result<String> {
         val tenantId = TenantSession.tenantId ?: return Result.failure(Exception("Tenant not found"))
         val table = TenantSession.currentTable
@@ -47,8 +46,7 @@ class CreateOrderUseCase(
             subtotal = CartManager.totalPrice,
             total = CartManager.totalPrice - discountAmount,
             discount = discountAmount,
-            discountCode = discountCode,
-            appliedCampaignId = campaignId
+            discountCode = discountCode
         )
 
         val order = Order(

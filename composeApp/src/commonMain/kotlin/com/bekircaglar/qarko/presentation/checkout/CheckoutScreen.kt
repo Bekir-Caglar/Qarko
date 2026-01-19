@@ -1,7 +1,6 @@
 package com.bekircaglar.qarko.presentation.checkout
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -30,7 +30,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -67,7 +66,6 @@ import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.gray
-import com.bekircaglar.qarko.presentation.common.theme.lightGray
 import com.bekircaglar.qarko.presentation.common.theme.lighterGray
 import com.bekircaglar.qarko.presentation.common.theme.primary
 import com.bekircaglar.qarko.presentation.common.theme.surfaceGray
@@ -106,7 +104,8 @@ fun CheckoutScreen(
     val uiState = viewModel.uiState
     val scrollState = rememberScrollState()
     val cartTotal = CartManager.totalPrice
-    val totalAmount = cartTotal
+    val totalAmount = cartTotal - uiState.discountAmount
+    val isZeroTotal = totalAmount <= 0
 
     var selectedCardIndex by remember { mutableStateOf(0) }
     var isCardListExpanded by remember { mutableStateOf(false) }
@@ -226,15 +225,15 @@ fun CheckoutScreen(
                         Spacer(modifier = Modifier.size(12.dp))
                         Column {
                             Text(
-                                text = "Kampanya Seç",
+                                text = uiState.selectedCampaign?.title ?: "Kampanya Seç",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = black
                             )
                             Text(
-                                text = "Mevcut kampanyalarınızı kullanın",
+                                text = if (uiState.selectedCampaign != null) "Kampanya uygulandı" else "Mevcut kampanyalarınızı kullanın",
                                 fontSize = 12.sp,
-                                color = gray,
+                                color = if (uiState.selectedCampaign != null) primary else gray,
                             )
                         }
                     }
@@ -248,7 +247,7 @@ fun CheckoutScreen(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            text = "Seç",
+                            text = if (uiState.selectedCampaign != null) "Değiştir" else "Seç",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = primary
@@ -281,10 +280,14 @@ fun CheckoutScreen(
                                 targetValue = if (isSelected) primary else gray,
                                 label = "tabTextColor"
                             )
+                            
+                            // Sepet 0 TL ise Online Ödeme tab'ını devre dışı bırak
+                            val isEnabled = !(isZeroTotal && index == 0)
 
                             Tab(
                                 selected = isSelected,
-                                onClick = { viewModel.onPaymentMethodChange(index) },
+                                onClick = { if (isEnabled) viewModel.onPaymentMethodChange(index) },
+                                enabled = isEnabled,
                                 modifier = Modifier.padding(vertical = 4.dp)
                             ) {
                                 Row(
@@ -295,13 +298,13 @@ fun CheckoutScreen(
                                     Icon(
                                         imageVector = tab.icon,
                                         contentDescription = null,
-                                        tint = textColor,
+                                        tint = if (isEnabled) textColor else gray.copy(alpha = 0.5f),
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Spacer(modifier = Modifier.size(8.dp))
                                     QText(
                                         text = tab.title,
-                                        color = textColor,
+                                        color = if (isEnabled) textColor else gray.copy(alpha = 0.5f),
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                         fontSize = 14.sp
                                     )
@@ -452,7 +455,7 @@ fun CheckoutScreen(
                                     tint = primary
                                 )
                                 Text(
-                                    text = "Siparişiniz hazırlandığında kasada nakit veya kredi kartı ile ödeme yapabilirsiniz.",
+                                    text = if (isZeroTotal) "Sipariş tutarınız 0 TL olduğu için ödemenizi doğrudan onaylayabilirsiniz." else "Siparişiniz hazırlandığında kasada nakit veya kredi kartı ile ödeme yapabilirsiniz.",
                                     fontSize = 14.sp,
                                     color = black,
                                     lineHeight = 20.sp
@@ -465,8 +468,45 @@ fun CheckoutScreen(
 
             // Payment Summary Section
             SectionCard(title = "Ödeme Özeti") {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Ürün Listesi
+                    CartManager.cartItems.forEach { item ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "${item.quantity}x ${item.name}",
+                                    fontSize = 14.sp,
+                                    color = black,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                            Text(
+                                text = "₺${(item.price * item.quantity).toInt()}",
+                                fontSize = 14.sp,
+                                color = black,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        color = gray.copy(alpha = 0.1f)
+                    )
+
                     SummaryRow(title = "Ara Toplam", amount = cartTotal)
+                    
+                    if (uiState.discountAmount > 0) {
+                        SummaryRow(
+                            title = uiState.selectedCampaign?.title ?: "İndirim",
+                            amount = uiState.discountAmount,
+                            isDiscount = true
+                        )
+                    }
                     
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 8.dp),
@@ -528,7 +568,7 @@ fun SectionCard(
 }
 
 @Composable
-fun SummaryRow(title: String, amount: Double) {
+fun SummaryRow(title: String, amount: Double, isDiscount: Boolean = false) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -536,13 +576,13 @@ fun SummaryRow(title: String, amount: Double) {
         Text(
             text = title,
             fontSize = 14.sp,
-            color = gray,
+            color = if (isDiscount) primary else gray,
             fontWeight = FontWeight.Medium
         )
         Text(
-            text = "₺${amount.toInt()}",
+            text = "${if (isDiscount) "-" else ""}₺${amount.toInt()}",
             fontSize = 14.sp,
-            color = black,
+            color = if (isDiscount) primary else black,
             fontWeight = FontWeight.Bold
         )
     }
@@ -590,7 +630,7 @@ fun CheckoutBottomBar(
                         )
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(
-                            text = "Siparişi Ver - ₺ ${totalAmount.toInt()}",
+                            text = "Siparişi Onayla - ₺ ${totalAmount.toInt()}",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = white

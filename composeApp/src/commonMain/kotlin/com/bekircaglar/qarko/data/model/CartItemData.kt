@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class CartItemData(
     val id: String = "", // Unique ID for cart item
     val foodId: String = "", // Original food item ID
+    val categoryId: String = "", // Category ID of the food item
     val imageUrl: String = "",
     val name: String = "",
     val description: String = "",

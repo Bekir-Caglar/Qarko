@@ -75,6 +75,7 @@ object CartManager {
         val cartItem = CartItemData(
             id = cartItemId,
             foodId = foodItem.id,
+            categoryId = foodItem.category, // Pass category ID
             imageUrl = foodItem.imageUrl,
             name = foodItem.name,
             description = description,
@@ -129,4 +130,3 @@ object CartManager {
      */
     fun isEmpty(): Boolean = _cartItems.isEmpty()
 }
-

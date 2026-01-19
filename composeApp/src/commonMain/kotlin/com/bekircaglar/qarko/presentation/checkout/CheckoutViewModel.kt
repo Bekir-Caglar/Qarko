@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bekircaglar.qarko.data.manager.CartManager
 import com.bekircaglar.qarko.data.manager.TenantSession
+import com.bekircaglar.qarko.data.manager.UserManager
 import com.bekircaglar.qarko.data.model.*
 import com.bekircaglar.qarko.domain.repository.ITenantRepository
 import com.bekircaglar.qarko.domain.usecase.order.CreateOrderUseCase
@@ -37,75 +38,281 @@ class CheckoutViewModel(
         loadCampaigns()
     }
 
-    private fun loadCampaigns() {
+    fun loadCampaigns() {
         val tenantId = TenantSession.tenantId ?: return
+        val userId = UserManager.currentUser?.id
         viewModelScope.launch {
             uiState = uiState.copy(isCampaignsLoading = true)
             try {
-                val snapshot = firestore.collection("tenants")
+                val campaignsSnapshot = firestore.collection("tenants")
                     .document(tenantId)
                     .collection("campaigns")
                     .get()
 
-                val campaigns = snapshot.documents.map { it.data<Campaign>().copy(id = it.id) }
-                validateCampaigns(campaigns)
+                val campaigns = campaignsSnapshot.documents.map { it.data<Campaign>().copy(id = it.id) }
+
+                val userUsages = if (userId != null) {
+                    try {
+                        val snapshot = firestore.collection("users")
+                            .document(userId)
+                            .collection("campaignUsages")
+                            .get()
+                        snapshot.documents.associate { it.id to it.data<UserCampaignUsage>() }
+                    } catch (e: Exception) {
+                        emptyMap()
+                    }
+                } else emptyMap()
+
+                validateCampaigns(campaigns, userUsages)
             } catch (e: Exception) {
                 uiState = uiState.copy(isCampaignsLoading = false)
             }
         }
     }
 
-    private fun validateCampaigns(campaigns: List<Campaign>) {
+    private fun validateCampaigns(campaigns: List<Campaign>, userUsages: Map<String, UserCampaignUsage>) {
         val cartTotal = CartManager.totalPrice
-        val now = Clock.System.now()
-        val currentDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
-        val currentDay = currentDateTime.dayOfWeek.ordinal // Adjust if 0-6 Sunday=0 is needed
+        val nowSeconds = Clock.System.now().epochSeconds
+        val currentDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val currentDay = currentDateTime.dayOfWeek.ordinal 
         val currentTimeStr = "${currentDateTime.hour.toString().padStart(2, '0')}:${currentDateTime.minute.toString().padStart(2, '0')}"
 
         val available = mutableListOf<Campaign>()
         val others = mutableListOf<Pair<Campaign, String>>()
+        val discounts = mutableMapOf<String, Double>()
 
         campaigns.filter { it.validity.isActive }.forEach { campaign ->
             val conditions = campaign.conditions
             val validity = campaign.validity
 
-            // Date validation
-            if (validity.startDate != null && now < validity.startDate) return@forEach
-            if (validity.endDate != null && now > validity.endDate) return@forEach
-
-            // Promo code validation (skip auto-listing if it requires code and user hasn't entered it)
-            if (conditions.requiresCode == true && uiState.appliedPromoCode != conditions.code) {
+            // Tarih Kontrolü
+            if (validity.startDate != null && nowSeconds < validity.startDate.seconds) {
+                others.add(campaign to "Bu kampanya henüz başlamadı.")
+                return@forEach
+            }
+            if (validity.endDate != null && nowSeconds > validity.endDate.seconds) {
                 return@forEach
             }
 
-            // Min Amount validation
-            if (conditions.minOrderAmount != null && cartTotal < conditions.minOrderAmount) {
-                others.add(campaign to "Harcanması gereken ek tutar: ₺${(conditions.minOrderAmount - cartTotal).toInt()}")
+            // Kullanıcı Limit Kontrolü
+            val userUsage = userUsages[campaign.id]
+            if (conditions.maxUsagePerUser != null && (userUsage?.usageCount ?: 0) >= conditions.maxUsagePerUser) {
+                others.add(campaign to "Bu kampanya için kullanım hakkınız doldu.")
                 return@forEach
             }
 
-            // Day validation
+            // Genel Limit Kontrolü
+            if (conditions.maxTotalUsage != null && campaign.usage.totalUsed >= conditions.maxTotalUsage) {
+                others.add(campaign to "Bu kampanya genel kullanım limitine ulaştı.")
+                return@forEach
+            }
+
+            // Saat Kontrolü
+            if (conditions.applicableHours != null) {
+                if (currentTimeStr < conditions.applicableHours.start || currentTimeStr > conditions.applicableHours.end) {
+                    others.add(campaign to "Bu kampanya sadece ${conditions.applicableHours.start} - ${conditions.applicableHours.end} saatleri arasında geçerlidir.")
+                    return@forEach
+                }
+            }
+
+            // Gün Kontrolü
             if (conditions.applicableDays != null && currentDay !in conditions.applicableDays) {
                 others.add(campaign to "Bu kampanya bugün geçerli değil.")
                 return@forEach
             }
 
-            // Hour validation
-            if (conditions.applicableHours != null) {
-                if (currentTimeStr < conditions.applicableHours.start || currentTimeStr > conditions.applicableHours.end) {
-                    others.add(campaign to "Bu kampanya şu an geçerli değil (${conditions.applicableHours.start} - ${conditions.applicableHours.end})")
+            // Kampanya Kodu Kontrolü
+            if (conditions.requiresCode == true && uiState.appliedPromoCode != conditions.code) {
+                return@forEach
+            }
+
+            // Sepet Tutarı Kontrolü
+            if (conditions.minOrderAmount != null && cartTotal < conditions.minOrderAmount) {
+                val remaining = conditions.minOrderAmount - cartTotal
+                others.add(campaign to "Sepet tutarınız: ₺${cartTotal.toInt()} (₺${remaining.toInt()} daha gerekli)")
+                return@forEach
+            }
+
+            val effectiveScope = when {
+                !conditions.applicableItems.isNullOrEmpty() -> CampaignScope.ITEM
+                !conditions.applicableCategories.isNullOrEmpty() -> CampaignScope.CATEGORY
+                else -> conditions.scope
+            }
+
+            // X Al Y Öde Kontrolü - AYNI ÜRÜNDEN X ADET MANTIĞI
+            if (campaign.type == CampaignType.BUY_X_GET_Y) {
+                val buyX = conditions.buyQuantity ?: 1
+                
+                val applicableItems = when (effectiveScope) {
+                    CampaignScope.ITEM -> {
+                        val ids = (conditions.applicableItems ?: emptyList()).map { it.trim() }
+                        CartManager.cartItems.filter { it.foodId.trim() in ids }
+                    }
+                    CampaignScope.CATEGORY -> {
+                        val cats = (conditions.applicableCategories ?: emptyList()).map { it.trim() }
+                        CartManager.cartItems.filter { it.categoryId.trim() in cats }
+                    }
+                    else -> CartManager.cartItems
+                }
+                
+                val hasRequirementMet = applicableItems.any { it.quantity >= buyX }
+                
+                if (!hasRequirementMet) {
+                    val message = if (applicableItems.isEmpty()) {
+                        "Bu kampanya için geçerli ürün eklemelisiniz."
+                    } else {
+                        "Aynı üründen en az $buyX adet eklemelisiniz."
+                    }
+                    others.add(campaign to message)
+                    return@forEach
+                }
+            } else {
+                // Diğer kampanya türleri için genel kapsam kontrolü
+                val isScopeValid = when (effectiveScope) {
+                    CampaignScope.ALL -> true
+                    CampaignScope.CATEGORY -> {
+                        val applicableCategories = (conditions.applicableCategories ?: emptyList()).map { it.trim() }
+                        CartManager.cartItems.any { it.categoryId.trim() in applicableCategories }
+                    }
+                    CampaignScope.ITEM -> {
+                        val applicableItems = (conditions.applicableItems ?: emptyList()).map { it.trim() }
+                        CartManager.cartItems.any { it.foodId.trim() in applicableItems }
+                    }
+                }
+
+                if (!isScopeValid) {
+                    val reason = when (effectiveScope) {
+                        CampaignScope.CATEGORY -> "Bu kampanya belirli kategorilerde geçerlidir."
+                        CampaignScope.ITEM -> "Bu kampanya belirli ürünlerde geçerlidir."
+                        else -> "Bu kampanya sepetinizdeki ürünler için geçerli değildir."
+                    }
+                    others.add(campaign to reason)
                     return@forEach
                 }
             }
 
-            available.add(campaign)
+            // Ücretsiz Ürün Kontrolü
+            if (campaign.type == CampaignType.FREE_ITEM) {
+                val hasFreeItem = CartManager.cartItems.any { it.foodId.trim() == conditions.freeItemId?.trim() }
+                if (!hasFreeItem) {
+                    others.add(campaign to "Hediye ürünü sepetinize eklemelisiniz.")
+                    return@forEach
+                }
+            }
+
+            val discountVal = calculateDiscountValue(campaign, effectiveScope)
+            if (discountVal > 0) {
+                discounts[campaign.id] = discountVal
+                available.add(campaign)
+            } else {
+                others.add(campaign to "Bu kampanya sepetinizde indirim sağlamıyor.")
+            }
         }
 
         uiState = uiState.copy(
             availableCampaigns = available,
             otherCampaigns = others,
+            campaignDiscounts = discounts,
             isCampaignsLoading = false
         )
+        
+        validateSelectedCampaign(available)
+    }
+
+    private fun validateSelectedCampaign(available: List<Campaign>) {
+        if (uiState.selectedCampaign != null) {
+            val found = available.find { it.id == uiState.selectedCampaign!!.id }
+            if (found == null) {
+                selectCampaign(null)
+            } else {
+                calculateDiscount(found)
+            }
+        }
+        
+        // Sepet 0 TL ise sadece kasada öde seçilsin
+        val finalAmount = CartManager.totalPrice - uiState.discountAmount
+        if (finalAmount <= 0) {
+            uiState = uiState.copy(selectedPaymentMethodIndex = 1)
+        }
+    }
+
+    private fun calculateDiscountValue(campaign: Campaign, effectiveScope: CampaignScope): Double {
+        val cartTotal = CartManager.totalPrice
+        val cartItems = CartManager.cartItems
+
+        return when (campaign.type) {
+            CampaignType.PERCENTAGE_DISCOUNT -> {
+                val applicableItems = when (effectiveScope) {
+                    CampaignScope.ALL -> cartItems
+                    CampaignScope.CATEGORY -> {
+                        val cats = (campaign.conditions.applicableCategories ?: emptyList()).map { it.trim() }
+                        cartItems.filter { it.categoryId.trim() in cats }
+                    }
+                    CampaignScope.ITEM -> {
+                        val items = (campaign.conditions.applicableItems ?: emptyList()).map { it.trim() }
+                        cartItems.filter { it.foodId.trim() in items }
+                    }
+                }
+                
+                if (effectiveScope == CampaignScope.ALL) {
+                    val amount = cartTotal * (campaign.discountValue / 100)
+                    campaign.conditions.maxDiscountAmount?.let { minOf(amount, it) } ?: amount
+                } else {
+                    val totalBaseApplicable = applicableItems.sumOf { it.basePrice * it.quantity }
+                    val amount = totalBaseApplicable * (campaign.discountValue / 100)
+                    campaign.conditions.maxDiscountAmount?.let { minOf(amount, it) } ?: amount
+                }
+            }
+            
+            CampaignType.FIXED_DISCOUNT -> {
+                val applicableItems = when (effectiveScope) {
+                    CampaignScope.ALL -> cartItems
+                    CampaignScope.CATEGORY -> {
+                        val cats = (campaign.conditions.applicableCategories ?: emptyList()).map { it.trim() }
+                        cartItems.filter { it.categoryId.trim() in cats }
+                    }
+                    CampaignScope.ITEM -> {
+                        val items = (campaign.conditions.applicableItems ?: emptyList()).map { it.trim() }
+                        cartItems.filter { it.foodId.trim() in items }
+                    }
+                }
+                
+                val totalBaseApplicable = applicableItems.sumOf { it.basePrice * it.quantity }
+                minOf(campaign.discountValue, totalBaseApplicable)
+            }
+
+            CampaignType.BUY_X_GET_Y -> {
+                val buyX = campaign.conditions.buyQuantity ?: 1
+                val getY = campaign.conditions.getQuantity ?: 1
+                val freeCountPerSet = buyX - getY
+                
+                val applicableItems = when (effectiveScope) {
+                    CampaignScope.ITEM -> {
+                        val ids = (campaign.conditions.applicableItems ?: emptyList()).map { it.trim() }
+                        cartItems.filter { it.foodId.trim() in ids }
+                    }
+                    CampaignScope.CATEGORY -> {
+                        val cats = (campaign.conditions.applicableCategories ?: emptyList()).map { it.trim() }
+                        cartItems.filter { it.categoryId.trim() in cats }
+                    }
+                    else -> cartItems
+                }
+
+                var totalDiscount = 0.0
+                applicableItems.filter { it.quantity >= buyX }.forEach { item ->
+                    val setSets = item.quantity / buyX
+                    val freeItems = setSets * freeCountPerSet
+                    totalDiscount += freeItems * item.basePrice
+                }
+                totalDiscount
+            }
+
+            CampaignType.FREE_ITEM -> {
+                val freeItemId = campaign.conditions.freeItemId?.trim()
+                val freeItemInCart = cartItems.find { it.foodId.trim() == freeItemId }
+                freeItemInCart?.basePrice ?: 0.0
+            }
+        }
     }
 
     fun applyPromoCode(code: String) {
@@ -119,11 +326,18 @@ class CheckoutViewModel(
                     .where("conditions.code", equalTo = code)
                     .get()
 
-                if (snapshot.documents.isNotEmpty()) {
-                    val campaign = snapshot.documents.first().data<Campaign>().copy(id = snapshot.documents.first().id)
-                    uiState = uiState.copy(appliedPromoCode = code)
-                    loadCampaigns() // Re-validate with new code
-                    uiState = uiState.copy(promoCodeError = null)
+                val campaignDoc = snapshot.documents.firstOrNull()
+                if (campaignDoc != null) {
+                    val campaign = campaignDoc.data<Campaign>().copy(id = campaignDoc.id)
+                    
+                    val cartTotal = CartManager.totalPrice
+                    if (campaign.conditions.minOrderAmount != null && cartTotal < campaign.conditions.minOrderAmount) {
+                        uiState = uiState.copy(promoCodeError = "Bu kod için minimum ₺${campaign.conditions.minOrderAmount.toInt()} sepet tutarı gereklidir.")
+                    } else {
+                        uiState = uiState.copy(appliedPromoCode = code, promoCodeError = null)
+                        loadCampaigns()
+                        selectCampaign(campaign)
+                    }
                 } else {
                     uiState = uiState.copy(promoCodeError = "Geçersiz kampanya kodu.")
                 }
@@ -143,19 +357,28 @@ class CheckoutViewModel(
     private fun calculateDiscount(campaign: Campaign?) {
         if (campaign == null) {
             uiState = uiState.copy(discountAmount = 0.0)
+            checkZeroTotal()
             return
         }
 
-        val cartTotal = CartManager.totalPrice
-        val discount = when (campaign.type) {
-            CampaignType.PERCENTAGE_DISCOUNT -> {
-                val amount = cartTotal * (campaign.discountValue / 100)
-                campaign.conditions.maxDiscountAmount?.let { minOf(amount, it) } ?: amount
-            }
-            CampaignType.FIXED_DISCOUNT -> campaign.discountValue
-            else -> 0.0
+        val effectiveScope = when {
+            !campaign.conditions.applicableItems.isNullOrEmpty() -> CampaignScope.ITEM
+            !campaign.conditions.applicableCategories.isNullOrEmpty() -> CampaignScope.CATEGORY
+            else -> campaign.conditions.scope
         }
-        uiState = uiState.copy(discountAmount = discount)
+        
+        val cartTotal = CartManager.totalPrice
+        val calculatedDiscount = calculateDiscountValue(campaign, effectiveScope)
+        
+        uiState = uiState.copy(discountAmount = minOf(calculatedDiscount, cartTotal))
+        checkZeroTotal()
+    }
+
+    private fun checkZeroTotal() {
+        val finalAmount = CartManager.totalPrice - uiState.discountAmount
+        if (finalAmount <= 0) {
+            uiState = uiState.copy(selectedPaymentMethodIndex = 1)
+        }
     }
 
     fun onOrderNoteChange(note: String) {
@@ -163,6 +386,10 @@ class CheckoutViewModel(
     }
 
     fun onPaymentMethodChange(index: Int) {
+        // Eğer sepet 0 TL ise ödeme yöntemi değişikliğine izin verme (sadece kasada öde seçili kalsın)
+        val finalAmount = CartManager.totalPrice - uiState.discountAmount
+        if (finalAmount <= 0 && index == 0) return
+        
         uiState = uiState.copy(selectedPaymentMethodIndex = index)
     }
 
@@ -178,7 +405,10 @@ class CheckoutViewModel(
 
             val result = createOrderUseCase(
                 paymentMethod = paymentMethod,
-                notes = uiState.orderNote
+                notes = uiState.orderNote,
+                discountAmount = uiState.discountAmount,
+                discountCode = uiState.selectedCampaign?.conditions?.code ?: uiState.appliedPromoCode,
+                campaignId = uiState.selectedCampaign?.id
             )
 
             result.onSuccess { orderId ->
@@ -198,9 +428,9 @@ data class CheckoutUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     
-    // Campaign related state
     val availableCampaigns: List<Campaign> = emptyList(),
     val otherCampaigns: List<Pair<Campaign, String>> = emptyList(),
+    val campaignDiscounts: Map<String, Double> = emptyMap(),
     val selectedCampaign: Campaign? = null,
     val isCampaignsLoading: Boolean = false,
     val appliedPromoCode: String? = null,

@@ -78,6 +78,7 @@ data class OrderPricing(
     val subtotal: Double = 0.0,
     val discount: Double = 0.0,
     val discountCode: String? = null,
+    val appliedCampaignId: String? = null,
     val tip: Double = 0.0,
     val serviceFee: Double = 0.0,
     val total: Double = 0.0

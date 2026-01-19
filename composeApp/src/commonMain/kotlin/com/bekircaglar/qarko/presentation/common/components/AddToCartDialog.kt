@@ -25,7 +25,7 @@ import kotlin.time.Duration
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun AddToCartDialog(onDismiss: () -> Unit) {
-    val animationSpeed = 2f
+    val animationSpeed = 3f
     val composition by rememberLottieComposition {
         LottieCompositionSpec.JsonString(
             Res.readBytes("files/add_cart.json").decodeToString()

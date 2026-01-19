@@ -3,6 +3,7 @@ package com.bekircaglar.qarko.data.manager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.bekircaglar.qarko.data.model.FoodItem
 import com.bekircaglar.qarko.data.model.MenuCategory
 import com.bekircaglar.qarko.data.model.QRScanResult
 import com.bekircaglar.qarko.data.model.Table
@@ -36,6 +37,12 @@ object TenantSession {
      * Tenant'ın kategorileri
      */
     var categories: List<MenuCategory> by mutableStateOf(emptyList())
+        private set
+
+    /**
+     * Tenant'ın tüm ürünleri
+     */
+    var menuItems: List<FoodItem> by mutableStateOf(emptyList())
         private set
 
     /**
@@ -91,18 +98,27 @@ object TenantSession {
     }
 
     /**
+     * Ürünleri set eder
+     */
+    fun updateMenuItems(itemList: List<FoodItem>) {
+        menuItems = itemList
+    }
+
+    /**
      * Oturum başlatır (tenant ve masa ile birlikte)
      */
     fun startSession(
         scanResult: QRScanResult,
         tenant: Tenant,
         table: Table? = null,
-        categories: List<MenuCategory> = emptyList()
+        categories: List<MenuCategory> = emptyList(),
+        items: List<FoodItem> = emptyList()
     ) {
         this.scanResult = scanResult
         this.currentTenant = tenant
         this.currentTable = table
         this.categories = categories.sortedBy { it.sortOrder }
+        this.menuItems = items
     }
 
     /**
@@ -113,6 +129,7 @@ object TenantSession {
         currentTable = null
         scanResult = null
         categories = emptyList()
+        menuItems = emptyList()
     }
 
     /**
@@ -149,4 +166,3 @@ enum class TenantFeature {
     CASH,
     HALAL
 }
-

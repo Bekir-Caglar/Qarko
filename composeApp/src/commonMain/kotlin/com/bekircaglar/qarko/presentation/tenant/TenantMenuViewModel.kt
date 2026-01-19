@@ -53,6 +53,11 @@ class TenantMenuViewModel(
             val result = getTenantMenuUseCase()
             result.onSuccess { menuData ->
                 println("MENU_LOAD_SUCCESS: ${menuData.categories.size} categories, ${menuData.allItems.size} items found.")
+                
+                // TenantSession'ı güncelle ki diğer ekranlar (Kampanya Seç vb.) bu verilere erişebilsin
+                TenantSession.updateCategories(menuData.categories)
+                TenantSession.updateMenuItems(menuData.allItems)
+
                 uiState = uiState.copy(
                     isLoading = false,
                     categories = menuData.categories,
