@@ -18,6 +18,7 @@ import com.bekircaglar.qarko.presentation.checkout.CheckoutViewModel
 import com.bekircaglar.qarko.presentation.orders.OrdersScreen
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailScreen
 import com.bekircaglar.qarko.presentation.profile.ProfileScreen
+import com.bekircaglar.qarko.presentation.profile.SettingsScreen
 import com.bekircaglar.qarko.presentation.tenant.TenantMenuScreen
 import com.bekircaglar.qarko.presentation.welcome.QRScanScreen
 import com.bekircaglar.qarko.presentation.welcome.WelcomeScreen
@@ -81,6 +82,10 @@ fun AppNavHost(
 
         composable<Profile> {
             ProfileScreen(navController)
+        }
+
+        composable<Settings> {
+            SettingsScreen(navController)
         }
 
         composable<Auth> {

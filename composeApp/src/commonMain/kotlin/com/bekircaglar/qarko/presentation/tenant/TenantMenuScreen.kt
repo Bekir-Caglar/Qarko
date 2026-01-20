@@ -29,6 +29,7 @@ import com.bekircaglar.qarko.navigation.AppBottomBar
 import com.bekircaglar.qarko.navigation.Cart
 import com.bekircaglar.qarko.navigation.FoodDetail
 import com.bekircaglar.qarko.navigation.QRScan
+import com.bekircaglar.qarko.navigation.Screens
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.*
 import com.bekircaglar.qarko.presentation.tenant.component.DrawerContent

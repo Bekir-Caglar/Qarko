@@ -146,7 +146,7 @@ fun AuthScreen(
             TextCenterDivider(text = "Veya", modifier = Modifier.offset(y = (-20).dp).padding(vertical = 16.dp))
 
             QButton(
-                buttonText = "E posta ile Giriş Yap",
+                buttonText = "Giriş Yap",
                 onClick = { navController.navigate(Login) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -157,7 +157,6 @@ fun AuthScreen(
             SignUpPrompt {
                 navController.navigate(Register)
             }
-
 
         }
     }

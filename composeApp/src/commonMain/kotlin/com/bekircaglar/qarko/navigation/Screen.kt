@@ -108,6 +108,9 @@ object CampaignSelect
 object Profile
 
 @Serializable
+object Settings
+
+@Serializable
 object Auth
 
 @Serializable
@@ -130,6 +133,7 @@ object Screens {
     const val CAMPAIGN = "campaign"
     const val CAMPAIGN_SELECT = "campaign_select"
     const val PROFILE = "profile"
+    const val SETTINGS = "settings"
     const val AUTH = "auth"
     const val LOGIN = "login"
     const val REGISTER = "register"

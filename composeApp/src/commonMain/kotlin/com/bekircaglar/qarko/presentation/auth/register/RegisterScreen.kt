@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -52,9 +55,11 @@ import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.components.QTextField
 import com.bekircaglar.qarko.presentation.common.components.TextCenterDivider
 import com.bekircaglar.qarko.util.QarkoTypography
+import com.bekircaglar.qarko.presentation.common.theme.primary
 import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.apple_logo_black
 import qarko.composeapp.generated.resources.facebook_logo
@@ -65,13 +70,16 @@ import qarko.composeapp.generated.resources.ic_profile_filled
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(
+    navController: NavController,
+    viewModel: RegisterViewModel = koinViewModel()
+) {
 
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(viewModel.registerSuccess) {
+        if (viewModel.registerSuccess) {
+            navController.popBackStack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -95,6 +103,7 @@ fun RegisterScreen(navController: NavController) {
     ) {
         val verticalScrollState = rememberScrollState()
         val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+        var passwordVisible by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier
@@ -130,8 +139,8 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.size(24.dp))
 
             QTextField(
-                value = name,
-                onValueChange = { name = it },
+                value = viewModel.name,
+                onValueChange = { viewModel.name = it },
                 placeholder = "İsim ve Soyisim",
                 leadingIcon = {
                     Icon(
@@ -156,8 +165,8 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.size(12.dp))
 
             QTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = viewModel.email,
+                onValueChange = { viewModel.email = it },
                 placeholder = "E-posta",
                 leadingIcon = {
                     Icon(
@@ -182,8 +191,8 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.size(12.dp))
 
             QTextField(
-                value = phone,
-                onValueChange = { phone = it },
+                value = viewModel.phone,
+                onValueChange = { viewModel.phone = it },
                 placeholder = "+90 000 000 00 00",
                 leadingIcon = {
                     Row(
@@ -217,8 +226,8 @@ fun RegisterScreen(navController: NavController) {
             Spacer(modifier = Modifier.size(12.dp))
 
             QTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = viewModel.password,
+                onValueChange = { viewModel.password = it },
                 placeholder = "Şifre",
                 isPassword = true,
                 passwordVisible = passwordVisible,
@@ -235,13 +244,27 @@ fun RegisterScreen(navController: NavController) {
 
             )
 
+            if (viewModel.error != null) {
+                Spacer(modifier = Modifier.size(8.dp))
+                QText(
+                    text = viewModel.error ?: "",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+
             Spacer(modifier = Modifier.size(32.dp))
 
-            QButton(
-                buttonText = "Kayıt Ol",
-                onClick = {},
-                modifier = Modifier.fillMaxWidth(),
-            )
+            if (viewModel.isLoading) {
+                CircularProgressIndicator(color = primary)
+            } else {
+                QButton(
+                    buttonText = "Kayıt Ol",
+                    onClick = { viewModel.register() },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
 
             TextCenterDivider(text = "Veya", modifier = Modifier.padding(vertical = 16.dp))
 
@@ -268,7 +291,7 @@ fun RegisterScreen(navController: NavController) {
                     icon = {
                         Image(
                             painter = painterResource(Res.drawable.google_logo),
-                            contentDescription = "Facebook Logo",
+                            contentDescription = "Google Logo",
                             modifier = Modifier.size(24.dp)
                         )
 
@@ -281,7 +304,7 @@ fun RegisterScreen(navController: NavController) {
                     icon = {
                         Image(
                             painter = painterResource(Res.drawable.apple_logo_black),
-                            contentDescription = "Facebook Logo",
+                            contentDescription = "Apple Logo",
                             colorFilter = ColorFilter.tint(black),
                             modifier = Modifier.size(24.dp)
                         )

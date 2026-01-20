@@ -22,18 +22,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bekircaglar.getPlatformName
+import com.bekircaglar.qarko.data.manager.UserManager
 import com.bekircaglar.qarko.presentation.common.theme.black
 import com.bekircaglar.qarko.presentation.common.theme.darkPrimary
 import com.bekircaglar.qarko.presentation.common.theme.lightBlue
 import com.bekircaglar.qarko.presentation.common.theme.lightGray
 import com.bekircaglar.qarko.presentation.common.theme.primary
 import com.bekircaglar.qarko.presentation.common.theme.white
-import compose.icons.FeatherIcons
-import compose.icons.feathericons.Clipboard
 import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.ic_gift
@@ -42,6 +40,8 @@ import qarko.composeapp.generated.resources.ic_home
 import qarko.composeapp.generated.resources.ic_home_filled
 import qarko.composeapp.generated.resources.ic_profile
 import qarko.composeapp.generated.resources.ic_profile_filled
+import qarko.composeapp.generated.resources.ic_waiter
+import qarko.composeapp.generated.resources.ic_waiter_filled
 
 @Composable
 fun AppBottomBar(
@@ -67,7 +67,8 @@ fun AppBottomBar(
             containerColor = white,
         ) {
             items.forEach { item ->
-                val selected = currentRoute == item.route
+                // Type-safe navigation routes are the qualified names of the classes
+                val selected = currentRoute.contains(item.route)
                 val indicatorColor by animateColorAsState(
                     if (selected && isAndroid) primary.copy(0.2f) else Color.Transparent,
                     label = "bottom_bar_indicator_color"
@@ -83,11 +84,7 @@ fun AppBottomBar(
                         }
                     },
                     icon = {
-                        val iconSize = if (selected) {
-                            if (!isAndroid) 22.dp else 20.dp
-                        } else {
-                            if (!isAndroid) 22.dp else 20.dp
-                        }
+                        val iconSize = 22.dp
 
                         Crossfade(
                             targetState = selected,
@@ -129,32 +126,34 @@ data class BottomBarItem(
 
 @Composable
 fun defaultBottomBarItems(): List<BottomBarItem> {
+    val isLoggedIn = UserManager.isLoggedIn
+
     return listOf(
         BottomBarItem(
-            route = Screens.TENANT_MENU,
+            route = TenantMenu::class.qualifiedName ?: Screens.TENANT_MENU,
             destination = TenantMenu,
             unSelectedIconPainter = painterResource(Res.drawable.ic_home),
             selectedIconPainter = painterResource(Res.drawable.ic_home_filled),
             label = "Menü"
         ),
         BottomBarItem(
-            route = Screens.ORDERS,
+            route = Orders::class.qualifiedName ?: Screens.ORDERS,
             destination = Orders,
-            unSelectedIconPainter = rememberVectorPainter(FeatherIcons.Clipboard),
-            selectedIconPainter = rememberVectorPainter(FeatherIcons.Clipboard),
+            unSelectedIconPainter = painterResource(Res.drawable.ic_waiter),
+            selectedIconPainter = painterResource(Res.drawable.ic_waiter_filled),
             label = "Siparişler"
         ),
-        BottomBarItem(route = "", destination = null, unSelectedIconPainter = null, label = ""),
+        BottomBarItem(route = "empty", destination = null, unSelectedIconPainter = null, label = ""),
         BottomBarItem(
-            route = Screens.CAMPAIGN,
+            route = Campaign::class.qualifiedName ?: Screens.CAMPAIGN,
             destination = Campaign,
             unSelectedIconPainter = painterResource(Res.drawable.ic_gift),
             selectedIconPainter = painterResource(Res.drawable.ic_gift_filled),
             label = "Kampanyalar"
         ),
         BottomBarItem(
-            route = Screens.AUTH,
-            destination = Auth,
+            route = if (isLoggedIn) Profile::class.qualifiedName ?: Screens.PROFILE else Auth::class.qualifiedName ?: Screens.AUTH,
+            destination = if (isLoggedIn) Profile else Auth,
             unSelectedIconPainter = painterResource(Res.drawable.ic_profile),
             selectedIconPainter = painterResource(Res.drawable.ic_profile_filled),
             label = "Profil"

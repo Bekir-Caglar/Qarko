@@ -5,17 +5,24 @@ import kotlinx.serialization.Serializable
 /**
  * Kullanıcı modeli
  * Firebase path: users/{userId}
+ * Web Admin paneliyle uyumlu yapı
  */
 @Serializable
 data class User(
     val id: String = "",
     val firebaseUid: String = "",
+    val email: String = "",
+    val phoneNumber: String = "", // Kayıt sırasında alınan telefon numarası
+    val displayName: String = "",
+    val role: String = "CUSTOMER", // "CUSTOMER", "ADMIN", "WAITER" vb.
+    val isEnabled: Boolean = true,
     val auth: UserAuth = UserAuth(),
     val trustScore: UserTrustScore = UserTrustScore(),
     val restrictions: UserRestrictions = UserRestrictions(),
     val profile: UserProfile = UserProfile(),
     val createdAt: Long = 0,
-    val updatedAt: Long = 0
+    val updatedAt: Long = 0,
+    val fcmToken: String? = null
 )
 
 /**
@@ -114,4 +121,3 @@ enum class CardBrand {
     TROY,
     UNKNOWN
 }
-

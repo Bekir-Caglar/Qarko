@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +59,8 @@ import com.bekircaglar.qarko.presentation.common.theme.lightGray
 import com.bekircaglar.qarko.presentation.common.theme.primary
 import com.bekircaglar.qarko.navigation.Login
 import com.bekircaglar.qarko.navigation.Register
+import com.bekircaglar.qarko.navigation.Profile
+import com.bekircaglar.qarko.navigation.TenantMenu
 import com.bekircaglar.qarko.presentation.auth.SignUpPrompt
 import com.bekircaglar.qarko.presentation.auth.components.LoginOptionButton
 import com.bekircaglar.qarko.presentation.common.components.QButton
@@ -67,6 +71,7 @@ import com.bekircaglar.qarko.util.QarkoTypography
 import com.bekircaglar.qarko.presentation.common.theme.white
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.apple_logo_black
 import qarko.composeapp.generated.resources.facebook_logo
@@ -77,17 +82,22 @@ import qarko.composeapp.generated.resources.ic_lock_filled
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
 @Composable
-
-fun LoginScreen(navController: NavController) {
-
+fun LoginScreen(
+    navController: NavController,
+    viewModel: LoginViewModel = koinViewModel()
+) {
     var selectedTabIndex by remember { mutableStateOf(0) }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-
     val tabs = listOf("E-posta", "Telefon Numarası")
+
+    LaunchedEffect(viewModel.loginSuccess) {
+        if (viewModel.loginSuccess) {
+            // Giriş başarılı olduğunda direkt profil sayfasına yönlendir ve stack'i temizle
+            navController.navigate(Profile) {
+                popUpTo(TenantMenu) { inclusive = false }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -190,8 +200,8 @@ fun LoginScreen(navController: NavController) {
             when (selectedTabIndex) {
                 0 -> { // E-posta
                     QTextField(
-                        value = email,
-                        onValueChange = { email = it },
+                        value = viewModel.email,
+                        onValueChange = { viewModel.email = it },
                         placeholder = "E-posta",
                         leadingIcon = {
                             Icon(
@@ -212,31 +222,12 @@ fun LoginScreen(navController: NavController) {
                         ),
                         modifier = Modifier.focusable(true)
                     )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    QTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        placeholder = "Şifre",
-                        isPassword = true,
-                        passwordVisible = passwordVisible,
-                        onPasswordVisibilityChange = { passwordVisible = it },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(Res.drawable.ic_lock_filled),
-                                contentDescription = "Şifre",
-                                tint = gray,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-
-                    )
                 }
 
                 1 -> { // Telefon
                     QTextField(
-                        value = phone,
-                        onValueChange = { phone = it },
+                        value = viewModel.phone,
+                        onValueChange = { viewModel.phone = it },
                         placeholder = "+90 000 000 00 00",
                         leadingIcon = {
                             Row(
@@ -256,17 +247,58 @@ fun LoginScreen(navController: NavController) {
                                 )
                             }
                         },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        )
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.size(16.dp))
+            
+            QTextField(
+                value = viewModel.password,
+                onValueChange = { viewModel.password = it },
+                placeholder = "Şifre",
+                isPassword = true,
+                passwordVisible = passwordVisible,
+                onPasswordVisibilityChange = { passwordVisible = it },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_lock_filled),
+                        contentDescription = "Şifre",
+                        tint = gray,
+                        modifier = Modifier.size(22.dp)
+                    )
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            )
+
+            if (viewModel.error != null) {
+                Spacer(modifier = Modifier.size(8.dp))
+                QText(
+                    text = viewModel.error ?: "",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+
             Spacer(modifier = Modifier.size(48.dp))
 
-            QButton(
-                buttonText = "Giriş Yap",
-                onClick = {},
-                modifier = Modifier.fillMaxWidth(),
-            )
+            if (viewModel.isLoading) {
+                CircularProgressIndicator(color = primary)
+            } else {
+                QButton(
+                    buttonText = "Giriş Yap",
+                    onClick = {
+                        if (selectedTabIndex == 0) viewModel.loginWithEmail()
+                        else viewModel.loginWithPhone()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
 
             TextCenterDivider(text = "Veya", modifier = Modifier.padding(vertical = 16.dp))
 
@@ -293,7 +325,7 @@ fun LoginScreen(navController: NavController) {
                     icon = {
                         Image(
                             painter = painterResource(Res.drawable.google_logo),
-                            contentDescription = "Facebook Logo",
+                            contentDescription = "Google Logo",
                             modifier = Modifier.size(24.dp)
                         )
 
@@ -306,7 +338,7 @@ fun LoginScreen(navController: NavController) {
                     icon = {
                         Image(
                             painter = painterResource(Res.drawable.apple_logo_black),
-                            contentDescription = "Facebook Logo",
+                            contentDescription = "Apple Logo",
                             colorFilter = ColorFilter.tint(black),
                             modifier = Modifier.size(24.dp)
                         )
