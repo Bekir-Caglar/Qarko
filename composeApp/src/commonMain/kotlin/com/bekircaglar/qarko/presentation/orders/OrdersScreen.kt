@@ -16,8 +16,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.bekircaglar.qarko.data.manager.UserManager
 import com.bekircaglar.qarko.navigation.AppBottomBar
+import com.bekircaglar.qarko.navigation.Auth
 import com.bekircaglar.qarko.navigation.QRScan
+import com.bekircaglar.qarko.navigation.Register
+import com.bekircaglar.qarko.presentation.common.components.LoginRequiredContent
 import com.bekircaglar.qarko.presentation.common.components.QText
 import com.bekircaglar.qarko.presentation.common.theme.*
 import org.jetbrains.compose.resources.painterResource
@@ -52,6 +56,9 @@ val dummyOrders = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrdersScreen(navController: NavController) {
+    // Auth kontrolü
+    val isLoggedIn = UserManager.isLoggedIn
+    
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
@@ -77,7 +84,21 @@ fun OrdersScreen(navController: NavController) {
             },
             containerColor = surfaceGray
         ) { paddingValues ->
-            if (dummyOrders.isEmpty()) {
+            // Kullanıcı giriş yapmamışsa LoginRequiredContent göster
+            if (!isLoggedIn) {
+                LoginRequiredContent(
+                    title = "Siparişlerinizi Görüntüleyin",
+                    description = "Geçmiş siparişlerinizi takip etmek ve tekrar sipariş vermek için giriş yapın.",
+                    featureList = listOf(
+                        "Sipariş geçmişinizi görüntüleyin",
+                        "Siparişlerinizi anlık takip edin",
+                        "Tek tıkla tekrar sipariş verin",
+                        "E-faturalarınıza erişin"
+                    ),
+                    onLoginClick = { navController.navigate(Auth) },
+                    modifier = Modifier.padding(paddingValues)
+                )
+            } else if (dummyOrders.isEmpty()) {
                 // Boş durum
                 Box(
                     modifier = Modifier

@@ -6,10 +6,12 @@ import com.bekircaglar.qarko.data.manager.UserManager
 import com.bekircaglar.qarko.data.manager.TenantSession
 import com.bekircaglar.qarko.data.manager.HistoryManager
 import com.bekircaglar.qarko.data.repository.AuthRepository
+import com.bekircaglar.qarko.data.repository.CampaignRepository
 import com.bekircaglar.qarko.data.repository.FoodRepository
 import com.bekircaglar.qarko.data.repository.OrderRepository
 import com.bekircaglar.qarko.data.repository.TenantRepository
 import com.bekircaglar.qarko.domain.repository.IAuthRepository
+import com.bekircaglar.qarko.domain.repository.ICampaignRepository
 import com.bekircaglar.qarko.domain.repository.IFoodRepository
 import com.bekircaglar.qarko.domain.repository.IOrderRepository
 import com.bekircaglar.qarko.domain.repository.ITenantRepository
@@ -20,6 +22,7 @@ import com.bekircaglar.qarko.domain.usecase.tenant.GetTenantMenuUseCase
 import com.bekircaglar.qarko.domain.usecase.tenant.LoadTenantFromQRUseCase
 import com.bekircaglar.qarko.presentation.auth.login.LoginViewModel
 import com.bekircaglar.qarko.presentation.auth.register.RegisterViewModel
+import com.bekircaglar.qarko.presentation.campaign.CampaignViewModel
 import com.bekircaglar.qarko.presentation.cart.CartViewModel
 import com.bekircaglar.qarko.presentation.checkout.CheckoutViewModel
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailViewModel
@@ -46,6 +49,7 @@ val repositoryModule = module {
     singleOf(::FoodRepository) bind IFoodRepository::class
     singleOf(::TenantRepository) bind ITenantRepository::class
     singleOf(::OrderRepository) bind IOrderRepository::class
+    singleOf(::CampaignRepository) bind ICampaignRepository::class
 }
 
 val useCaseModule = module {
@@ -64,6 +68,7 @@ val viewModelModule = module {
     viewModelOf(::FoodDetailViewModel)
     viewModelOf(::CartViewModel)
     viewModelOf(::CheckoutViewModel)
+    viewModelOf(::CampaignViewModel)
 }
 
 val appModule = module {
