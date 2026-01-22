@@ -11,7 +11,8 @@ data class QRScanResult(
     val tenantSlug: String, // İşletme slug'ı (örn: beko-yeri)
     val tableId: String? = null, // Masa ID'si (opsiyonel)
     val isValid: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val scannedAt: Long = 0L // Tarama zamanı (epoch millis)
 ) {
     companion object {
         /**
@@ -20,6 +21,8 @@ data class QRScanResult(
          * @return QRScanResult
          */
         fun fromUrl(url: String): QRScanResult {
+            val currentTime = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+            
             return try {
                 // URL pattern: https://qarko.app/menu/{tenantSlug}?tableId={tableId}
                 val regex = Regex("""https?://(?:www\.)?qarko\.app/menu/([a-zA-Z0-9_-]+)(?:\?tableId=([a-zA-Z0-9_-]+))?""")
@@ -30,7 +33,8 @@ data class QRScanResult(
                     QRScanResult(
                         tenantSlug = tenantSlug,
                         tableId = tableId.takeIf { it.isNotEmpty() },
-                        isValid = true
+                        isValid = true,
+                        scannedAt = currentTime
                     )
                 } else {
                     // Alternatif basit parse
@@ -48,13 +52,15 @@ data class QRScanResult(
                         QRScanResult(
                             tenantSlug = slug,
                             tableId = tableId,
-                            isValid = true
+                            isValid = true,
+                            scannedAt = currentTime
                         )
                     } else {
                         QRScanResult(
                             tenantSlug = "",
                             isValid = false,
-                            errorMessage = "Geçersiz QR kod formatı"
+                            errorMessage = "Geçersiz QR kod formatı",
+                            scannedAt = currentTime
                         )
                     }
                 }
@@ -62,7 +68,8 @@ data class QRScanResult(
                 QRScanResult(
                     tenantSlug = "",
                     isValid = false,
-                    errorMessage = "QR kod okunamadı: ${e.message}"
+                    errorMessage = "QR kod okunamadı: ${e.message}",
+                    scannedAt = currentTime
                 )
             }
         }

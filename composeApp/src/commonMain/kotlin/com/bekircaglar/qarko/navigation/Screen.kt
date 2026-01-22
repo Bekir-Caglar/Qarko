@@ -96,6 +96,11 @@ object Cart
 object Checkout
 
 @Serializable
+data class QRVerification(
+    val expectedTableId: String // Doğrulanması gereken masa ID
+)
+
+@Serializable
 object Orders
 
 @Serializable

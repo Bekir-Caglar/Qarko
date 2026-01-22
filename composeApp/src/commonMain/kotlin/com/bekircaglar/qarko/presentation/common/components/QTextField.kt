@@ -35,29 +35,25 @@ fun QTextField(
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
     leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
     isPassword: Boolean = false,
     passwordVisible: Boolean = false,
     onPasswordVisibilityChange: ((Boolean) -> Unit)? = null,
+    visualTransformation: VisualTransformation? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        enabled = enabled,
-        isError = isError,
-        leadingIcon = leadingIcon,
-        placeholder = {
-            QText(
-                text = placeholder,
-                color = gray,
-                fontSize = 14.sp,
-            )
-        },
-        maxLines = 1,
-        shape = MaterialTheme.shapes.medium,
-        visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
-        trailingIcon = if (isPassword && onPasswordVisibilityChange != null) {
+    // VisualTransformation önceliği: 1. Custom, 2. Password, 3. None
+    val effectiveVisualTransformation = when {
+        visualTransformation != null -> visualTransformation
+        isPassword && !passwordVisible -> PasswordVisualTransformation()
+        else -> VisualTransformation.None
+    }
+    
+    // TrailingIcon önceliği: 1. Custom, 2. Password toggle
+    val effectiveTrailingIcon: @Composable (() -> Unit)? = when {
+        trailingIcon != null -> trailingIcon
+        isPassword && onPasswordVisibilityChange != null -> {
             {
                 IconButton(onClick = { onPasswordVisibilityChange(!passwordVisible) }) {
                     Icon(
@@ -68,7 +64,27 @@ fun QTextField(
                     )
                 }
             }
-        } else null,
+        }
+        else -> null
+    }
+
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        enabled = enabled,
+        isError = isError,
+        leadingIcon = leadingIcon,
+        trailingIcon = effectiveTrailingIcon,
+        placeholder = {
+            QText(
+                text = placeholder,
+                color = gray,
+                fontSize = 14.sp,
+            )
+        },
+        maxLines = 1,
+        shape = MaterialTheme.shapes.medium,
+        visualTransformation = effectiveVisualTransformation,
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp),

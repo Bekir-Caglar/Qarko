@@ -45,23 +45,26 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.bekircaglar.qarko.navigation.FoodDetail
-import com.bekircaglar.qarko.navigation.Checkout
-import com.bekircaglar.qarko.presentation.common.theme.black
-import com.bekircaglar.qarko.presentation.common.theme.gray
-import com.bekircaglar.qarko.presentation.common.theme.lightGray
 import com.bekircaglar.qarko.data.manager.CartManager
 import com.bekircaglar.qarko.data.manager.FavoritesManager
+import com.bekircaglar.qarko.data.manager.UserManager
 import com.bekircaglar.qarko.data.model.FoodItem
+import com.bekircaglar.qarko.navigation.Auth
+import com.bekircaglar.qarko.navigation.Checkout
+import com.bekircaglar.qarko.navigation.FoodDetail
+import com.bekircaglar.qarko.presentation.auth.components.AuthBottomSheet
 import com.bekircaglar.qarko.presentation.cart.component.CardPaymentTab
 import com.bekircaglar.qarko.presentation.cart.component.PaymentMethodSheet
 import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.presentation.common.components.QText
+import com.bekircaglar.qarko.presentation.common.theme.black
+import com.bekircaglar.qarko.presentation.common.theme.gray
+import com.bekircaglar.qarko.presentation.common.theme.lightGray
+import com.bekircaglar.qarko.presentation.common.theme.lighterGray
 import com.bekircaglar.qarko.presentation.common.theme.primary
 import com.bekircaglar.qarko.presentation.common.theme.surfaceGray
 import com.bekircaglar.qarko.presentation.common.theme.white
 import coil3.compose.AsyncImage
-import com.bekircaglar.qarko.presentation.common.theme.lighterGray
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ShoppingCart
 
@@ -69,9 +72,14 @@ import compose.icons.feathericons.ShoppingCart
 @Composable
 fun CartScreen(navController: NavController) {
     val cartItems = CartManager.cartItems
+    
+    // Auth kontrolü
+    val isLoggedIn = UserManager.isLoggedIn
 
     var showPaymentSheet by remember { mutableStateOf(false) }
+    var showAuthBottomSheet by remember { mutableStateOf(false) }
     val modalBottomSheetState = rememberModalBottomSheetState()
+    val authBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Calculate total reactively
     val total by remember {
@@ -243,7 +251,14 @@ fun CartScreen(navController: NavController) {
                                 modifier = Modifier
                                     .weight(1f)
                                     .fillMaxSize()
-                                    .clickable { navController.navigate(Checkout) },
+                                    .clickable {
+                                        // Auth kontrolü: Giriş yapmamışsa bottom sheet aç
+                                        if (isLoggedIn) {
+                                            navController.navigate(Checkout)
+                                        } else {
+                                            showAuthBottomSheet = true
+                                        }
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -299,6 +314,26 @@ fun CartScreen(navController: NavController) {
                 }
             )
         }
+    }
+
+    // Auth Bottom Sheet - Kullanıcı giriş yapmamışsa gösterilir
+    if (showAuthBottomSheet) {
+        AuthBottomSheet(
+            onDismiss = { showAuthBottomSheet = false },
+            onLoginWithEmail = {
+                showAuthBottomSheet = false
+                navController.navigate(Auth)
+            },
+            onLoginWithGoogle = {
+                // TODO: Google sign-in entegrasyonu
+                showAuthBottomSheet = false
+            },
+            onLoginWithApple = {
+                // TODO: Apple sign-in entegrasyonu
+                showAuthBottomSheet = false
+            },
+            sheetState = authBottomSheetState
+        )
     }
 }
 

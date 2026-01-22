@@ -2,6 +2,7 @@ package com.bekircaglar.qarko.domain.usecase.order
 
 import com.bekircaglar.qarko.data.manager.CartManager
 import com.bekircaglar.qarko.data.manager.TenantSession
+import com.bekircaglar.qarko.data.manager.UserManager
 import com.bekircaglar.qarko.data.model.*
 import com.bekircaglar.qarko.domain.repository.IOrderRepository
 import kotlinx.datetime.Clock
@@ -20,7 +21,8 @@ class CreateOrderUseCase(
         discountCode: String? = null,
         campaignId: String? = null
     ): Result<String> {
-        val tenantId = TenantSession.tenantId ?: return Result.failure(Exception("Tenant not found"))
+        val tenant = TenantSession.currentTenant ?: return Result.failure(Exception("Tenant not found"))
+        val userId = UserManager.currentUser?.id
         val table = TenantSession.currentTable
         val cartItems = CartManager.cartItems
 
@@ -53,7 +55,10 @@ class CreateOrderUseCase(
 
         val order = Order(
             orderNumber = generateOrderNumber(),
-            tenantId = tenantId,
+            tenantId = tenant.id,
+            tenantName = tenant.name,
+            tenantLogoUrl = tenant.logo,
+            userId = userId,
             tableId = table?.id,
             tableNumber = table?.name?.filter { it.isDigit() }?.toIntOrNull(),
             type = OrderType.DINE_IN,

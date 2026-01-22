@@ -15,6 +15,7 @@ import com.bekircaglar.qarko.presentation.cart.CartScreen
 import com.bekircaglar.qarko.presentation.checkout.CampaignSelectScreen
 import com.bekircaglar.qarko.presentation.checkout.CheckoutScreen
 import com.bekircaglar.qarko.presentation.checkout.CheckoutViewModel
+import com.bekircaglar.qarko.presentation.checkout.QRVerificationScreen
 import com.bekircaglar.qarko.presentation.orders.OrdersScreen
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailScreen
 import com.bekircaglar.qarko.presentation.profile.ProfileScreen
@@ -61,6 +62,14 @@ fun AppNavHost(
 
         composable<Checkout> {
             CheckoutScreen(navController)
+        }
+
+        composable<QRVerification> { backStackEntry ->
+            val route: QRVerification = backStackEntry.toRoute()
+            QRVerificationScreen(
+                navController = navController,
+                expectedTableId = route.expectedTableId
+            )
         }
 
         composable<Orders> {

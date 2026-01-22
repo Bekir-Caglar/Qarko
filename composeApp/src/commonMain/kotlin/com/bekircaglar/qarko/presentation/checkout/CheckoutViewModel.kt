@@ -420,12 +420,136 @@ class CheckoutViewModel(
             }
         }
     }
+
+    /**
+     * Yeni kart kaydetme (DEV MODE - Token sistemi sonra eklenecek)
+     */
+    fun saveCard(card: SavedCard, onSuccess: () -> Unit) {
+        val userId = UserManager.currentUser?.id ?: return
+        
+        viewModelScope.launch {
+            uiState = uiState.copy(isSavingCard = true)
+            try {
+                // Kart bilgilerini Firebase'e kaydet
+                val cardWithUserId = card.copy(userId = userId)
+                val docRef = firestore.collection("users")
+                    .document(userId)
+                    .collection("savedCards")
+                    .add(cardWithUserId)
+                
+                // Kaydedilen kartın ID'sini al ve güncelle
+                val savedCardWithId = cardWithUserId.copy(id = docRef.id)
+                
+                // Eğer varsayılan kart olarak işaretlendiyse, diğer kartların varsayılan durumunu kaldır
+                if (card.isDefault) {
+                    val existingCards = firestore.collection("users")
+                        .document(userId)
+                        .collection("savedCards")
+                        .get()
+                    
+                    existingCards.documents.forEach { doc ->
+                        if (doc.id != docRef.id) {
+                            firestore.collection("users")
+                                .document(userId)
+                                .collection("savedCards")
+                                .document(doc.id)
+                                .update("isDefault" to false)
+                        }
+                    }
+                }
+                
+                // UserManager'ı güncelle
+                UserManager.addSavedCard(savedCardWithId)
+                
+                uiState = uiState.copy(isSavingCard = false)
+                onSuccess()
+                
+            } catch (e: Exception) {
+                uiState = uiState.copy(
+                    isSavingCard = false,
+                    error = "Kart kaydedilemedi: ${e.message}"
+                )
+            }
+        }
+    }
+
+    /**
+     * Kullanıcının kayıtlı kartlarını yükle
+     */
+    fun loadSavedCards() {
+        val userId = UserManager.currentUser?.id ?: return
+        
+        viewModelScope.launch {
+            try {
+                val snapshot = firestore.collection("users")
+                    .document(userId)
+                    .collection("savedCards")
+                    .get()
+                
+                val cards = snapshot.documents.map { doc ->
+                    doc.data<SavedCard>().copy(id = doc.id)
+                }
+                
+                UserManager.updateSavedCards(cards)
+            } catch (e: Exception) {
+                // Hata durumunda sessizce devam et
+            }
+        }
+    }
+
+    /**
+     * QR doğrulama gerekli mi kontrol et
+     * NEW kullanıcı + Kasada ödeme = QR doğrulama gerekli
+     */
+    fun requiresQRVerification(): Boolean {
+        val trustLevel = UserManager.trustLevel
+        val isPayAtCounter = uiState.selectedPaymentMethodIndex == 1 // Kasada Öde
+        val totalAmount = CartManager.totalPrice - uiState.discountAmount
+        
+        // Sepet 0 TL ise doğrulama gereksiz (zaten para alınmıyor)
+        if (totalAmount <= 0) return false
+        
+        // NEW kullanıcı + Kasada ödeme = QR doğrulama gerekli
+        return trustLevel == TrustLevel.NEW && isPayAtCounter && !uiState.isQRVerified
+    }
+
+    /**
+     * QR kodu doğrula
+     * @param scannedTableId Taranan QR'dan gelen masa ID
+     * @return Doğrulama başarılı mı?
+     */
+    fun verifyQRCode(scannedTableId: String): Boolean {
+        val expectedTableId = TenantSession.tableId
+        
+        if (scannedTableId == expectedTableId) {
+            uiState = uiState.copy(isQRVerified = true)
+            return true
+        }
+        
+        uiState = uiState.copy(error = "Masa eşleşmiyor! Lütfen sipariş verdiğiniz masanın QR kodunu okutun.")
+        return false
+    }
+
+    /**
+     * QR doğrulama durumunu sıfırla
+     */
+    fun resetQRVerification() {
+        uiState = uiState.copy(isQRVerified = false)
+    }
+
+    /**
+     * Hata mesajını temizle
+     */
+    fun clearError() {
+        uiState = uiState.copy(error = null)
+    }
 }
 
 data class CheckoutUiState(
     val orderNote: String = "",
     val selectedPaymentMethodIndex: Int = 0,
     val isLoading: Boolean = false,
+    val isSavingCard: Boolean = false,
     val error: String? = null,
     
     val availableCampaigns: List<Campaign> = emptyList(),
@@ -436,9 +560,13 @@ data class CheckoutUiState(
     val appliedPromoCode: String? = null,
     val isPromoCodeLoading: Boolean = false,
     val promoCodeError: String? = null,
-    val discountAmount: Double = 0.0
+    val discountAmount: Double = 0.0,
+    
+    // QR Doğrulama
+    val isQRVerified: Boolean = false
 )
 
 sealed interface CheckoutEvent {
     data class OrderSuccess(val orderId: String) : CheckoutEvent
 }
+

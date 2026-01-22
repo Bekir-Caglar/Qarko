@@ -26,6 +26,7 @@ import com.bekircaglar.qarko.presentation.campaign.CampaignViewModel
 import com.bekircaglar.qarko.presentation.cart.CartViewModel
 import com.bekircaglar.qarko.presentation.checkout.CheckoutViewModel
 import com.bekircaglar.qarko.presentation.food_detail.FoodDetailViewModel
+import com.bekircaglar.qarko.presentation.orders.OrdersViewModel
 import com.bekircaglar.qarko.presentation.profile.ProfileViewModel
 import com.bekircaglar.qarko.presentation.tenant.TenantMenuViewModel
 import com.russhwolf.settings.Settings
@@ -69,6 +70,7 @@ val viewModelModule = module {
     viewModelOf(::CartViewModel)
     viewModelOf(::CheckoutViewModel)
     viewModelOf(::CampaignViewModel)
+    viewModelOf(::OrdersViewModel)
 }
 
 val appModule = module {

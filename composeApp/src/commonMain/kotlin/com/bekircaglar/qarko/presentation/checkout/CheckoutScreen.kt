@@ -31,6 +31,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -39,9 +41,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +66,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import com.bekircaglar.qarko.data.manager.CartManager
 import com.bekircaglar.qarko.presentation.common.components.BackButton
 import com.bekircaglar.qarko.presentation.common.components.QText
@@ -82,7 +89,16 @@ import org.jetbrains.compose.resources.painterResource
 import qarko.composeapp.generated.resources.Res
 import qarko.composeapp.generated.resources.mastercard
 import androidx.compose.foundation.Image
+import com.bekircaglar.qarko.data.manager.TenantSession
+import com.bekircaglar.qarko.data.manager.UserManager
+import com.bekircaglar.qarko.data.model.CardBrand
+import com.bekircaglar.qarko.data.model.SavedCard
 import com.bekircaglar.qarko.navigation.Orders
+import com.bekircaglar.qarko.navigation.QRVerification
+import com.bekircaglar.qarko.navigation.TenantMenu
+import com.bekircaglar.qarko.presentation.checkout.component.AddCardBottomSheet
+import com.bekircaglar.qarko.presentation.checkout.component.OrderSuccessDialog
+import com.bekircaglar.qarko.presentation.checkout.component.QRVerificationBottomSheet
 import org.koin.compose.viewmodel.koinViewModel
 
 private data class PaymentTab(
@@ -103,34 +119,117 @@ fun CheckoutScreen(
 ) {
     val uiState = viewModel.uiState
     val scrollState = rememberScrollState()
-    val cartTotal = CartManager.totalPrice
-    val totalAmount = cartTotal - uiState.discountAmount
+    
+    // Gerçek sepet verileri
+    val liveCartTotal = CartManager.totalPrice
+    val liveOrderNote = uiState.orderNote
+    
+    // Success dialog açıkken gösterilecek geçici veriler (cart temizlenmeden önceki değerler)
+    var savedTotalForDialog by remember { mutableStateOf<Double?>(null) }
+    var savedNoteForDialog by remember { mutableStateOf<String?>(null) }
+    var savedDiscountForDialog by remember { mutableStateOf<Double?>(null) }
+    
+    // Eğer dialog açıksa kayıtlı verileri kullan, değilse canlı verileri
+    val cartTotal = savedTotalForDialog ?: liveCartTotal
+    val discountAmount = savedDiscountForDialog ?: uiState.discountAmount
+    val totalAmount = cartTotal - discountAmount
     val isZeroTotal = totalAmount <= 0
 
     var selectedCardIndex by remember { mutableStateOf(0) }
     var isCardListExpanded by remember { mutableStateOf(false) }
+    var showAddCardSheet by remember { mutableStateOf(false) }
+    var showQRVerification by remember { mutableStateOf(false) }
+    var pendingQRVerification by rememberSaveable { mutableStateOf(false) } // rememberSaveable ile navigation sırasında korunur
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    
+    // Snackbar için
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    val savedCards = listOf(
-        SavedCard("Ziraat Kartım", "5425 88** **** **18"),
-        SavedCard("Garanti Bonus", "5234 56** **** **42")
-    )
+    // Gerçek kayıtlı kartları kullan
+    val savedCards = UserManager.savedCards
+    
+    // Masa bilgisi
+    val tableNumber = TenantSession.currentTable?.name
+    val expectedTableId = remember { TenantSession.tableId }
+
+    // Kayıtlı kartları yükle
+    LaunchedEffect(Unit) {
+        viewModel.loadSavedCards()
+    }
+
+    // Kart listesi değiştiğinde seçili index'i kontrol et
+    LaunchedEffect(savedCards.size) {
+        if (selectedCardIndex >= savedCards.size && savedCards.isNotEmpty()) {
+            selectedCardIndex = 0
+        }
+    }
+    
+    // QR Verification ekranından dönüldüğünde sonucu al (StateFlow ile reactive)
+    val qrVerificationResult by navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow<Boolean?>("qr_verification_result", null)
+        ?.collectAsState() ?: remember { mutableStateOf(null) }
+    
+    LaunchedEffect(qrVerificationResult) {
+        println("CheckoutScreen: qrVerificationResult = $qrVerificationResult, pendingQRVerification = $pendingQRVerification")
+        
+        if (pendingQRVerification && qrVerificationResult != null) {
+            println("CheckoutScreen: Processing QR verification result...")
+            pendingQRVerification = false
+            // Sonucu temizle (tekrar tetiklememesi için)
+            navController.currentBackStackEntry?.savedStateHandle?.remove<Boolean>("qr_verification_result")
+            
+            if (qrVerificationResult == true) {
+                // Doğrulama başarılı, sipariş ver
+                println("CheckoutScreen: Verification SUCCESS! Placing order...")
+                viewModel.verifyQRCode(expectedTableId ?: "")
+                // Verileri kaydet ve sipariş ver
+                savedTotalForDialog = liveCartTotal
+                savedDiscountForDialog = uiState.discountAmount
+                savedNoteForDialog = liveOrderNote
+                viewModel.placeOrder()
+            } else {
+                // Doğrulama başarısız
+                println("CheckoutScreen: Verification FAILED/CANCELLED")
+                scope.launch {
+                    snackbarHostState.showSnackbar("QR doğrulama iptal edildi")
+                }
+            }
+        }
+    }
+    
+    // Error mesajlarını göster
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { errorMsg ->
+            snackbarHostState.showSnackbar(errorMsg)
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is CheckoutEvent.OrderSuccess -> {
-                    navController.navigate(Orders) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            inclusive = false
-                        }
-                    }
+                    // Hemen yönlendirmek yerine success dialog göster
+                    showSuccessDialog = true
                 }
             }
         }
     }
+    
+    // Sipariş vermeden önce verileri kaydet (lambda olarak tanımlanmalı, Composable içinde fun kullanılamaz)
+    val saveDataAndPlaceOrder: () -> Unit = {
+        // Mevcut değerleri kaydet (cart temizlenmeden önce)
+        savedTotalForDialog = liveCartTotal
+        savedDiscountForDialog = uiState.discountAmount
+        savedNoteForDialog = liveOrderNote
+        // Sipariş ver
+        viewModel.placeOrder()
+    }
 
     Scaffold(
         containerColor = surfaceGray,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -154,7 +253,12 @@ fun CheckoutScreen(
                 totalAmount = totalAmount,
                 isLoading = uiState.isLoading
             ) {
-                viewModel.placeOrder()
+                // QR doğrulama gerekli mi kontrol et
+                if (viewModel.requiresQRVerification()) {
+                    showQRVerification = true
+                } else {
+                    saveDataAndPlaceOrder()
+                }
             }
         }
     ) { paddingValues ->
@@ -317,121 +421,162 @@ fun CheckoutScreen(
 
                     when (uiState.selectedPaymentMethodIndex) {
                         0 -> {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(lighterGray.copy(alpha = 0.2f))
-                            ) {
-                                Row(
+                            if (savedCards.isEmpty()) {
+                                // Kayıtlı kart yoksa direkt "Kart Ekle" göster
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable { isCardListExpanded = !isCardListExpanded }
-                                        .padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Image(
-                                            painter = painterResource(Res.drawable.mastercard),
-                                            contentDescription = "Mastercard",
-                                            modifier = Modifier.size(32.dp)
-                                        )
-                                        Spacer(modifier = Modifier.size(12.dp))
-                                        Column {
-                                            Text(
-                                                text = savedCards[selectedCardIndex].name,
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                color = black
+                                        .drawBehind {
+                                            val stroke = Stroke(
+                                                width = 3f,
+                                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
                                             )
-                                            Text(
-                                                text = savedCards[selectedCardIndex].maskedNumber,
-                                                fontSize = 12.sp,
-                                                color = gray
+                                            drawRoundRect(
+                                                color = Color.Gray,
+                                                style = stroke,
+                                                cornerRadius = CornerRadius(8.dp.toPx())
                                             )
                                         }
+                                        .clickable { showAddCardSheet = true }
+                                        .padding(20.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = FeatherIcons.Plus,
+                                            contentDescription = null,
+                                            tint = primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.size(12.dp))
+                                        Text(
+                                            text = "Yeni Kart Ekle",
+                                            color = primary,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
-
-                                    Icon(
-                                        imageVector = if (isCardListExpanded) FeatherIcons.ChevronUp else FeatherIcons.ChevronDown,
-                                        contentDescription = null,
-                                        tint = gray,
-                                        modifier = Modifier.size(20.dp)
-                                    )
                                 }
-
-                                if (isCardListExpanded) {
-                                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                                        HorizontalDivider(color = gray.copy(alpha = 0.1f))
-                                        savedCards.forEachIndexed { index, card ->
-                                            if (index != selectedCardIndex) {
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .clickable {
-                                                            selectedCardIndex = index
-                                                            isCardListExpanded = false
-                                                        }
-                                                        .padding(vertical = 12.dp),
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Image(
-                                                        painter = painterResource(Res.drawable.mastercard),
-                                                        contentDescription = "Mastercard",
-                                                        modifier = Modifier.size(32.dp)
-                                                    )
-                                                    Spacer(modifier = Modifier.size(12.dp))
-                                                    Column {
-                                                        Text(
-                                                            text = card.name,
-                                                            fontSize = 14.sp,
-                                                            fontWeight = FontWeight.Medium,
-                                                            color = black
-                                                        )
-                                                        Text(
-                                                            text = card.maskedNumber,
-                                                            fontSize = 12.sp,
-                                                            color = gray
-                                                        )
-                                                    }
-                                                }
+                            } else {
+                                // Kayıtlı kartlar var
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(lighterGray.copy(alpha = 0.2f))
+                                ) {
+                                    val selectedCard = savedCards.getOrNull(selectedCardIndex) ?: savedCards.first()
+                                    
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { isCardListExpanded = !isCardListExpanded }
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Image(
+                                                painter = painterResource(Res.drawable.mastercard),
+                                                contentDescription = selectedCard.cardBrand.name,
+                                                modifier = Modifier.size(32.dp)
+                                            )
+                                            Spacer(modifier = Modifier.size(12.dp))
+                                            Column {
+                                                Text(
+                                                    text = selectedCard.cardName,
+                                                    fontSize = 14.sp,
+                                                    fontWeight = FontWeight.Medium,
+                                                    color = black
+                                                )
+                                                Text(
+                                                    text = "**** **** **** ${selectedCard.lastFourDigits}",
+                                                    fontSize = 12.sp,
+                                                    color = gray
+                                                )
                                             }
                                         }
 
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(top = 8.dp)
-                                                .drawBehind {
-                                                    val stroke = Stroke(
-                                                        width = 3f,
-                                                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
+                                        Icon(
+                                            imageVector = if (isCardListExpanded) FeatherIcons.ChevronUp else FeatherIcons.ChevronDown,
+                                            contentDescription = null,
+                                            tint = gray,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+
+                                    if (isCardListExpanded) {
+                                        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                                            HorizontalDivider(color = gray.copy(alpha = 0.1f))
+                                            savedCards.forEachIndexed { index, card ->
+                                                if (index != selectedCardIndex) {
+                                                    Row(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .clickable {
+                                                                selectedCardIndex = index
+                                                                isCardListExpanded = false
+                                                            }
+                                                            .padding(vertical = 12.dp),
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Image(
+                                                            painter = painterResource(Res.drawable.mastercard),
+                                                            contentDescription = card.cardBrand.name,
+                                                            modifier = Modifier.size(32.dp)
+                                                        )
+                                                        Spacer(modifier = Modifier.size(12.dp))
+                                                        Column {
+                                                            Text(
+                                                                text = card.cardName,
+                                                                fontSize = 14.sp,
+                                                                fontWeight = FontWeight.Medium,
+                                                                color = black
+                                                            )
+                                                            Text(
+                                                                text = "**** **** **** ${card.lastFourDigits}",
+                                                                fontSize = 12.sp,
+                                                                color = gray
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(top = 8.dp)
+                                                    .drawBehind {
+                                                        val stroke = Stroke(
+                                                            width = 3f,
+                                                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
+                                                        )
+                                                        drawRoundRect(
+                                                            color = Color.Gray,
+                                                            style = stroke,
+                                                            cornerRadius = CornerRadius(8.dp.toPx())
+                                                        )
+                                                    }
+                                                    .clickable { showAddCardSheet = true }
+                                                    .padding(12.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(
+                                                        imageVector = FeatherIcons.Plus,
+                                                        contentDescription = null,
+                                                        tint = gray,
+                                                        modifier = Modifier.size(16.dp)
                                                     )
-                                                    drawRoundRect(
-                                                        color = Color.Gray,
-                                                        style = stroke,
-                                                        cornerRadius = CornerRadius(8.dp.toPx())
+                                                    Spacer(modifier = Modifier.size(8.dp))
+                                                    Text(
+                                                        text = "Kart Ekle",
+                                                        color = gray,
+                                                        fontSize = 14.sp,
+                                                        fontWeight = FontWeight.Medium
                                                     )
                                                 }
-                                                .clickable { }
-                                                .padding(12.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Icon(
-                                                    imageVector = FeatherIcons.Plus,
-                                                    contentDescription = null,
-                                                    tint = gray,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                                Spacer(modifier = Modifier.size(8.dp))
-                                                Text(
-                                                    text = "Kart Ekle",
-                                                    color = gray,
-                                                    fontSize = 14.sp,
-                                                    fontWeight = FontWeight.Medium
-                                                )
                                             }
                                         }
                                     }
@@ -537,12 +682,68 @@ fun CheckoutScreen(
             Spacer(modifier = Modifier.height(80.dp))
         }
     }
-}
 
-data class SavedCard(
-    val name: String,
-    val maskedNumber: String
-)
+    // Kart Ekleme Bottom Sheet
+    if (showAddCardSheet) {
+        AddCardBottomSheet(
+            onDismiss = { showAddCardSheet = false },
+            onSaveCard = { card ->
+                viewModel.saveCard(card) {
+                    showAddCardSheet = false
+                    // Yeni eklenen kartı seçili yap
+                    selectedCardIndex = savedCards.size // Yeni kart en sona eklenecek
+                }
+            },
+            isLoading = uiState.isSavingCard
+        )
+    }
+
+    // QR Doğrulama Bottom Sheet
+    if (showQRVerification) {
+        QRVerificationBottomSheet(
+            onDismiss = { showQRVerification = false },
+            onScanQR = {
+                showQRVerification = false
+                pendingQRVerification = true // QR tarama sonrası doğrulama bekle
+                // Yeni QR Verification ekranına git
+                navController.navigate(QRVerification(expectedTableId = expectedTableId ?: ""))
+            },
+            tableNumber = tableNumber
+        )
+    }
+
+    // Sipariş Başarılı Dialog
+    if (showSuccessDialog) {
+        OrderSuccessDialog(
+            onDismiss = {
+                showSuccessDialog = false
+                // Geçici verileri temizle
+                savedTotalForDialog = null
+                savedDiscountForDialog = null
+                savedNoteForDialog = null
+                // Menüye dön
+                navController.navigate(TenantMenu) {
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = false
+                    }
+                }
+            },
+            onGoToOrders = {
+                showSuccessDialog = false
+                // Geçici verileri temizle
+                savedTotalForDialog = null
+                savedDiscountForDialog = null
+                savedNoteForDialog = null
+                // Siparişlerim ekranına git
+                navController.navigate(Orders) {
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = false
+                    }
+                }
+            }
+        )
+    }
+}
 
 @Composable
 fun SectionCard(

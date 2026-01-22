@@ -2,16 +2,21 @@ package com.bekircaglar.qarko.data.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
+import kotlinx.datetime.Clock
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * Sipariş modeli
- * Firebase path: tenants/{tenantId}/orders/{orderId}
- */
 @Serializable
 data class Order(
     val id: String = "",
     val orderNumber: String? = null,
     val tenantId: String = "",
+    val tenantName: String? = null,
+    val tenantLogoUrl: String? = null,
     val userId: String? = null,
     val tableId: String? = null,
     val table: OrderTable? = null,
@@ -22,13 +27,89 @@ data class Order(
     val paymentMethod: String? = null,
     val paymentStatus: String? = null,
     val status: OrderStatus = OrderStatus.PENDING,
-    val statusHistory: List<StatusHistoryItem> = emptyList(),
-    val timing: OrderTiming? = null,
+    // statusHistory ve timing alanlarını şimdilik devre dışı bırakıyoruz
+    // çünkü Firebase Timestamp formatı kotlinx.datetime ile uyumsuz
+    // val statusHistory: List<StatusHistoryItem> = emptyList(),
+    // val timing: OrderTiming? = null,
     val notes: String? = null,
     val totalAmount: Double? = null,
-    val createdAt: Instant? = null,
-    val updatedAt: Instant? = null
+    val createdAt: @Serializable(with = SafeInstantSerializer::class) Instant? = null,
+    val updatedAt: @Serializable(with = SafeInstantSerializer::class) Instant? = null
 )
+
+/**
+ * Firebase Timestamp veya ISO 8601 formatını güvenli şekilde parse eden serializer.
+ * Parse başarısız olursa null döner.
+ */
+object SafeInstantSerializer : KSerializer<Instant?> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("SafeInstant", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Instant?) {
+        if (value != null) {
+            encoder.encodeString(value.toString())
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): Instant? {
+        return try {
+            when (val decodedValue = decoder.decodeString()) {
+                "" -> null
+                else -> parseFirebaseTimestamp(decodedValue) ?: Instant.parse(decodedValue)
+            }
+        } catch (e: Exception) {
+            println("SafeInstantSerializer: Parse failed, returning null. Error: ${e.message}")
+            null
+        }
+    }
+
+    private fun parseFirebaseTimestamp(value: String): Instant? {
+        // Format: "Timestamp(seconds=1769078177, nanoseconds=270000000)"
+        if (value.startsWith("Timestamp(")) {
+            val regex = """seconds=(\d+).*nanoseconds=(\d+)""".toRegex()
+            val match = regex.find(value)
+            if (match != null) {
+                val seconds = match.groupValues[1].toLong()
+                val nanoseconds = match.groupValues[2].toLong()
+                return Instant.fromEpochSeconds(seconds, nanoseconds)
+            }
+        }
+        return null
+    }
+}
+
+@Serializable(with = OrderStatusSerializer::class)
+enum class OrderStatus {
+    PENDING,
+    CONFIRMED,
+    PREPARING,
+    READY,
+    DELIVERED,
+    SERVED,
+    COMPLETED,
+    CANCELLED;
+
+    companion object {
+        fun fromString(value: String?): OrderStatus {
+            return when (value?.uppercase()) {
+                "PENDING" -> PENDING
+                "CONFIRMED", "APPROVED", "ACCEPTED" -> CONFIRMED
+                "PREPARING" -> PREPARING
+                "READY" -> READY
+                "DELIVERED" -> DELIVERED
+                "SERVED" -> SERVED
+                "COMPLETED", "FINISHED" -> COMPLETED
+                "CANCELLED", "REJECTED" -> CANCELLED
+                else -> PENDING
+            }
+        }
+    }
+}
+
+object OrderStatusSerializer : KSerializer<OrderStatus> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("OrderStatus", PrimitiveKind.STRING)
+    override fun serialize(encoder: Encoder, value: OrderStatus) = encoder.encodeString(value.name)
+    override fun deserialize(decoder: Decoder): OrderStatus = OrderStatus.fromString(decoder.decodeString())
+}
 
 @Serializable
 data class OrderTable(
@@ -101,34 +182,23 @@ enum class PaymentStatus {
     UNPAID
 }
 
-@Serializable
-enum class OrderStatus {
-    PENDING,
-    CONFIRMED,
-    PREPARING,
-    READY,
-    DELIVERED,
-    SERVED,
-    COMPLETED,
-    CANCELLED
-}
-
+// Bu sınıflar şimdilik kullanılmıyor - Firebase Timestamp sorunu çözülene kadar
 @Serializable
 data class StatusHistoryItem(
-    val status: OrderStatus,
-    val timestamp: Instant,
+    val status: OrderStatus = OrderStatus.PENDING,
+    val timestamp: String? = null, // String olarak sakla, timestamp parse sorununu önle
     val note: String? = null,
     val changedBy: String? = null
 )
 
 @Serializable
 data class OrderTiming(
-    val placedAt: Instant,
-    val confirmedAt: Instant? = null,
-    val prepStartedAt: Instant? = null,
-    val readyAt: Instant? = null,
-    val servedAt: Instant? = null,
-    val completedAt: Instant? = null,
-    val cancelledAt: Instant? = null,
+    val placedAt: String? = null,
+    val confirmedAt: String? = null,
+    val prepStartedAt: String? = null,
+    val readyAt: String? = null,
+    val servedAt: String? = null,
+    val completedAt: String? = null,
+    val cancelledAt: String? = null,
     val estimatedPrepTime: Int? = null
 )
